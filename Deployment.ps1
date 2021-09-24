@@ -8,7 +8,9 @@
 
 # APPLICATION INSTALLATION
 
-    ## install chocolatey
+
+## install chocolatey
+    Install-Module -Name BurntToast -Force
     if (!(Test-Path "$($env:ProgramData)\chocolatey\choco.exe")) { 
         # installing chocolatey
         Write-host "      application not found. Installing:" -f green
@@ -30,6 +32,7 @@
         .\choco-install.ps1
         Write-host "        - Installation complete.." -f yellow}
 
+        
         choco install googlechrome -y | out-null
         choco install 7Zip -y | out-null
         choco install VLC -y | out-null
@@ -41,7 +44,7 @@
         MsiExec.exe /i googlechromestandaloneenterprise.msi /qn
         }
 
-
+       
 # Windows Cleaning Lady
     # Microsoft Bloat
     $ProgressPreference = "SilentlyContinue" #hide progressbar
