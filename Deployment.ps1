@@ -31,14 +31,14 @@
         Write-host "        - Installing.." -f yellow
         .\choco-install.ps1
         Write-host "        - Installation complete.." -f yellow}
-
         
         choco install googlechrome -y | out-null
         choco install 7Zip -y | out-null
         choco install VLC -y | out-null
         Start-Sleep -s 3
-# hotfiX! if chrome is corrupt from Chocolatey download and install from d
-    if (!((Get-ChildItem -Directory -Depth 2 ("$env:ProgramFiles", "$env:ProgramFiles(x86)") -Recurse).Name -eq "Chrome")){
+
+        # hotfiX! if chrome is corrupt from Chocolatey download and install from d
+        if(!((Get-ChildItem  -Directory -Depth 1 ("$env:ProgramFiles", "$env:ProgramFiles(x86)") -ErrorAction SilentlyContinue).Name -eq "en-US")){
         Invoke-WebRequest -uri "https://dl.google.com/tag/s/dl/chrome/install/googlechromestandaloneenterprise64.msi" -OutFile "$env:ProgramData\chocolatey\googlechromestandaloneenterprise.msi"
         Set-Location "$env:ProgramData\chocolatey"
         MsiExec.exe /i googlechromestandaloneenterprise.msi /qn
