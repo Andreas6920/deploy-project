@@ -10,7 +10,7 @@
 
 
 ## install chocolatey
-    Install-Module -Name BurntToast -Force
+    write-host "Installing chocolatey"
     if (!(Test-Path "$($env:ProgramData)\chocolatey\choco.exe")) { 
         # installing chocolatey
         Write-host "      application not found. Installing:" -f green
@@ -31,14 +31,17 @@
         Write-host "        - Installing.." -f yellow
         .\choco-install.ps1
         Write-host "        - Installation complete.." -f yellow}
-        
+        write-host "Installing chocolatey - Chrome"
         choco install googlechrome -y | out-null
+        write-host "Installing chocolatey - 7zip"
         choco install 7Zip -y | out-null
+        write-host "Installing chocolatey - VLC"
         choco install VLC -y | out-null
         Start-Sleep -s 3
 
         # hotfiX! if chrome is corrupt from Chocolatey download and install from d
-        if(!((Get-ChildItem  -Directory -Depth 1 ("$env:ProgramFiles", "$env:ProgramFiles(x86)") -ErrorAction SilentlyContinue).Name -eq "en-US")){
+        if(!((Get-ChildItem  -Directory -Depth 1 ("$env:ProgramFiles", "$env:ProgramFiles(x86)") -ErrorAction SilentlyContinue).Name -eq "Chrome")){
+        write-host "choco failed to install chrome, installing with msiexec"
         Invoke-WebRequest -uri "https://dl.google.com/tag/s/dl/chrome/install/googlechromestandaloneenterprise64.msi" -OutFile "$env:ProgramData\chocolatey\googlechromestandaloneenterprise.msi"
         Set-Location "$env:ProgramData\chocolatey"
         MsiExec.exe /i googlechromestandaloneenterprise.msi /qn
@@ -117,7 +120,7 @@
     
     foreach ($Bloat in $Bloatware) {
         $bloat_output = Get-AppxPackage | Where-Object Name -Like $Bloat | Select -Property Name; #Write-Host "        - Removing: $bloat_output"
-        if ($bloat_output -ne $null) { Write-host "        - Bloat app found! Removing: " -f yellow -nonewline; ; write-host "$bloat_output".Split(".")[1].Split("}")[0] -f yellow }
+        if ($bloat_output -ne $null) { Write-host "        - Removing: " -f yellow -nonewline; ; write-host "$bloat_output".Split(".")[1].Split("}")[0] -f yellow }
         Get-AppxPackage -Name $Bloat | Remove-AppxPackage -ErrorAction SilentlyContinue | Out-Null
         Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null}
     
@@ -283,4 +286,10 @@ $START_MENU_LAYOUT = @"
      foreach ($trackingservice in $trackingservices) {
      if((Get-Service -Name $trackingservice | ? Starttype -ne Disabled)){
      Get-Service | ? name -eq $trackingservice | Set-Service -StartupType Disabled}}
-        
+    
+     ## Removing printers
+     If (!(Test-Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")) {
+            New-Item -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Force | Out-Null}
+            Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
+            Get-Printer | ? Name -Like * | Remove-Printer -ErrorAction SilentlyContinue
+            
