@@ -1,12 +1,5 @@
+   
 
-
-## What could be better, what's up next:
-##  Google chrome fails to install with chrome, install it with msi https://dl.google.com/tag/s/dl/chrome/install/googlechromestandaloneenterprise64.msi
-##   Inking & Typing Personalization is not disabled
-##   Store my activity history on this device
-##   Let Windows Track app launches to improve start and search results
-
-# APPLICATION INSTALLATION
 
 
 ## install chocolatey
@@ -31,21 +24,47 @@
         Write-host "        - Installing.." -f yellow
         .\choco-install.ps1
         Write-host "        - Installation complete.." -f yellow}
-        write-host "Installing chocolatey - Chrome"
-        choco install googlechrome -y | out-null
-        write-host "Installing chocolatey - 7zip"
-        choco install 7Zip -y | out-null
-        write-host "Installing chocolatey - VLC"
-        choco install VLC -y | out-null
+        
         Start-Sleep -s 3
 
-        # hotfiX! if chrome is corrupt from Chocolatey download and install from d
-        if(!((Get-ChildItem  -Directory -Depth 1 ("$env:ProgramFiles", "$env:ProgramFiles(x86)") -ErrorAction SilentlyContinue).Name -eq "Chrome")){
-        write-host "choco failed to install chrome, installing with msiexec"
-        Invoke-WebRequest -uri "https://dl.google.com/tag/s/dl/chrome/install/googlechromestandaloneenterprise64.msi" -OutFile "$env:ProgramData\chocolatey\googlechromestandaloneenterprise.msi"
-        Set-Location "$env:ProgramData\chocolatey"
-        MsiExec.exe /i googlechromestandaloneenterprise.msi /qn
-        }
+        Add-Type -AssemblyName System.Windows.Forms
+        $global:balloon = New-Object System.Windows.Forms.NotifyIcon
+        $path = (Get-Process -id $pid).Path
+        $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path) 
+        $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+        $balloon.BalloonTipText = 'Google Chrome Browser'
+        $balloon.BalloonTipTitle = "Installing Chrome..." 
+        $balloon.Visible = $true 
+        $balloon.ShowBalloonTip(50000)
+        choco install googlechrome -y | out-null
+
+        Start-Sleep -s 3
+
+        Add-Type -AssemblyName System.Windows.Forms
+        $global:balloon = New-Object System.Windows.Forms.NotifyIcon
+        $path = (Get-Process -id $pid).Path
+        $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path) 
+        $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+        $balloon.BalloonTipText = '7-zip'
+        $balloon.BalloonTipTitle = "Installing 7-zip..." 
+        $balloon.Visible = $true 
+        $balloon.ShowBalloonTip(50000)
+        choco install 7Zip -y | out-null
+        
+        Start-Sleep -s 3
+
+        Add-Type -AssemblyName System.Windows.Forms
+        $global:balloon = New-Object System.Windows.Forms.NotifyIcon
+        $path = (Get-Process -id $pid).Path
+        $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path) 
+        $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+        $balloon.BalloonTipText = 'VLC Media player'
+        $balloon.BalloonTipTitle = "Installing VLC..." 
+        $balloon.Visible = $true 
+        $balloon.ShowBalloonTip(50000)
+        choco install VLC -y | out-null
+        
+        Start-Sleep -s 3
 
        
 # Windows Cleaning Lady
@@ -293,3 +312,5 @@ $START_MENU_LAYOUT = @"
             Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
             Get-Printer | ? Name -Like * | Remove-Printer -ErrorAction SilentlyContinue
             
+
+    
