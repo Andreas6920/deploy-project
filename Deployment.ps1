@@ -36,7 +36,7 @@
         $balloon.BalloonTipTitle = "Installing Chrome..." 
         $balloon.Visible = $true 
         $balloon.ShowBalloonTip(50000)
-        choco install googlechrome -y | out-null
+        choco install googlechrome -y --ignore-checksums --force | out-null
 
         Start-Sleep -s 3
 
@@ -68,74 +68,79 @@
 
        
 # Windows Cleaning Lady 
-    
-## Unpin start menu
 
-Add-Type -AssemblyName System.Windows.Forms
-$global:balloon = New-Object System.Windows.Forms.NotifyIcon
-$path = (Get-Process -id $pid).Path
-$balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path) 
-$balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
-$balloon.BalloonTipText = 'Windows Settings'
-$balloon.BalloonTipTitle = "Unpinning StartMenu.." 
-$balloon.Visible = $true 
-$balloon.ShowBalloonTip(50000)
 
-$START_MENU_LAYOUT = @"
-<LayoutModificationTemplate xmlns:defaultlayout="http://schemas.microsoft.com/Start/2014/FullDefaultLayout" xmlns:start="http://schemas.microsoft.com/Start/2014/StartLayout" Version="1" xmlns:taskbar="http://schemas.microsoft.com/Start/2014/TaskbarLayout" xmlns="http://schemas.microsoft.com/Start/2014/LayoutModification">
-<LayoutOptions StartTileGroupCellWidth="6" />
-<DefaultLayoutOverride>
-    <StartLayoutCollection>
-        <defaultlayout:StartLayout GroupCellWidth="6" />
-    </StartLayoutCollection>
-</DefaultLayoutOverride>
-</LayoutModificationTemplate>
-"@
-    $layoutFile = "$env:SystemRoot\StartMenuLayout.xml"        
-    start-sleep -s 3
-### Delete layout file if it already exists
-    If (Test-Path $layoutFile) {
-        Remove-Item $layoutFile
-    }
-### Creates the blank layout file
-    $START_MENU_LAYOUT | Out-File $layoutFile -Encoding ASCII
-    $regAliases = @("HKLM", "HKCU")
-### Assign the start layout and force it to apply with "LockedStartLayout" at both the machine and user level
-    foreach ($regAlias in $regAliases) {
-        $basePath = $regAlias + ":\Software\Policies\Microsoft\Windows"
-        $keyPath = $basePath + "\Explorer" 
-        IF (!(Test-Path -Path $keyPath)) { 
-            New-Item -Path $basePath -Name "Explorer" | Out-Null
+Write-host "      CLEANING - Start Menu" -f Green
+
+    ## Unpin start menu
+        Add-Type -AssemblyName System.Windows.Forms
+        $global:balloon = New-Object System.Windows.Forms.NotifyIcon
+        $path = (Get-Process -id $pid).Path
+        $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path) 
+        $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+        $balloon.BalloonTipText = 'Windows Settings'
+        $balloon.BalloonTipTitle = "Unpinning StartMenu.." 
+        $balloon.Visible = $true 
+        $balloon.ShowBalloonTip(50000)
+
+        $START_MENU_LAYOUT = (Invoke-WebRequest -uri "https://raw.githubusercontent.com/Andreas6920/deploy-project/main/resources/StartMenyLayout.xml" -UseBasicParsing).content
+
+        $layoutFile = "$env:SystemRoot\StartMenuLayout.xml"
+                
+        start-sleep 5
+        #Delete layout file if it already exists
+        Write-Host "        - Removing current Start Menu..." -f Yellow
+        If (Test-Path $layoutFile) {
+            Remove-Item $layoutFile
         }
-        Set-ItemProperty -Path $keyPath -Name "LockedStartLayout" -Value 1
-        Set-ItemProperty -Path $keyPath -Name "StartLayoutFile" -Value $layoutFile
-    }
-### Restart Explorer, open the start menu (necessary to load the new layout), and give it a few seconds to process
-    Stop-Process -name explorer -Force
-    Start-Sleep -s 3
-### Enable the ability to pin items again by disabling "LockedStartLayout"
-    foreach ($regAlias in $regAliases) {
-        $basePath = $regAlias + ":\Software\Policies\Microsoft\Windows"
-        $keyPath = $basePath + "\Explorer" 
-        Set-ItemProperty -Path $keyPath -Name "LockedStartLayout" -Value 0
-    }
-    Stop-Process -name explorer
-    Import-StartLayout -LayoutPath $layoutFile -MountPath $env:SystemDrive\
-    Remove-Item $layoutFile
+
+        #Creates the blank layout file
+        Write-host "        - Creates and applying a new blank start menu..." -f Yellow
+        $START_MENU_LAYOUT | Out-File $layoutFile -Encoding ASCII
+        $regAliases = @("HKLM", "HKCU")
+
+        #Assign the start layout and force it to apply with "LockedStartLayout" at both the machine and user level
+        foreach ($regAlias in $regAliases) {
+            $basePath = $regAlias + ":\Software\Policies\Microsoft\Windows"
+            $keyPath = $basePath + "\Explorer" 
+            IF (!(Test-Path -Path $keyPath)) { 
+                New-Item -Path $basePath -Name "Explorer" | Out-Null
+            }
+            Set-ItemProperty -Path $keyPath -Name "LockedStartLayout" -Value 1
+            Set-ItemProperty -Path $keyPath -Name "StartLayoutFile" -Value $layoutFile
+        }
+
+        #Restart Explorer, open the start menu (necessary to load the new layout), and give it a few seconds to process
+        Write-host "        - Restarting explorer..." -f yellow
+        Stop-Process -name explorer -Force
+        Start-Sleep -s 5
+
+        #Enable the ability to pin items again by disabling "LockedStartLayout"
+        foreach ($regAlias in $regAliases) {
+            $basePath = $regAlias + ":\Software\Policies\Microsoft\Windows"
+            $keyPath = $basePath + "\Explorer" 
+            Set-ItemProperty -Path $keyPath -Name "LockedStartLayout" -Value 0
+        }
+        Stop-Process -name explorer
+        write-host "        - Save changes to all users.." -f yellow
+        Import-StartLayout -LayoutPath $layoutFile -MountPath $env:SystemDrive\
+        Remove-Item $layoutFile
+        write-host "        - CLEANED - Start Menu" -f yellow
+        
 
 
-## unpin Taskbar
-    start-sleep -s 3
-    Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband -Name FavoritesChanges -Value 3 -Type Dword -Force | Out-Null
-    Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband -Name FavoritesRemovedChanges -Value 32 -Type Dword -Force | Out-Null
-    Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband -Name FavoritesVersion -Value 3 -Type Dword -Force | Out-Null
-    Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband -Name Favorites -Value ([byte[]](0xFF)) -Force | Out-Null
-    Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowCortanaButton -Type DWord -Value 0 | Out-Null
-    Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Search -Name SearchboxTaskbarMode -Value 0 -Type Dword | Out-Null
-    set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowTaskViewButton -Type DWord -Value 0 | Out-Null
-    Remove-Item -Path "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\*" -Recurse -Force | Out-Null
-    Stop-Process -name explorer
-    start-sleep -s 1
+    ## unpin Taskbar
+        start-sleep -s 3
+        Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband -Name FavoritesChanges -Value 3 -Type Dword -Force | Out-Null
+        Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband -Name FavoritesRemovedChanges -Value 32 -Type Dword -Force | Out-Null
+        Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband -Name FavoritesVersion -Value 3 -Type Dword -Force | Out-Null
+        Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband -Name Favorites -Value ([byte[]](0xFF)) -Force | Out-Null
+        Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowCortanaButton -Type DWord -Value 0 | Out-Null
+        Set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Search -Name SearchboxTaskbarMode -Value 0 -Type Dword | Out-Null
+        set-ItemProperty -Path HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced -Name ShowTaskViewButton -Type DWord -Value 0 | Out-Null
+        Remove-Item -Path "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\*" -Recurse -Force | Out-Null
+        Stop-Process -name explorer
+        start-sleep -s 1
     
 ## Removing Microsoft Bloat
         $ProgressPreference = "SilentlyContinue" #hide progressbar
@@ -234,21 +239,21 @@ $START_MENU_LAYOUT = @"
 
 # Privacy
 
-## Disable Advertising ID
+    ## Disable Advertising ID
     Write-host "        - Disabling advertising ID." -f yellow
     If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo")) {
         New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Force | Out-Null}
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Type DWord -Value 0
     Start-Sleep -s 2
 
-## Disable let websites provide locally relevant content by accessing language list
+    ## Disable let websites provide locally relevant content by accessing language list
     Write-host "        - Disabling location tracking." -f yellow
     If (!(Test-Path "HKCU:\Control Panel\International\User Profile")) {
         New-Item -Path "HKCU:\Control Panel\International\User Profile" -Force | Out-Null}
     Set-ItemProperty -Path  "HKCU:\Control Panel\International\User Profile" -Name "HttpAcceptLanguageOptOut"  -Value 1
     Start-Sleep -s 2
   
-## Disable Show me suggested content in the Settings app
+    ## Disable Show me suggested content in the Settings app
     Write-host "        - Disabling personalized content suggestions." -f Yellow
     If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager")) {
         New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Force | Out-Null}
@@ -257,14 +262,14 @@ $START_MENU_LAYOUT = @"
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353696Enabled" -Type DWord -Value 0
     Start-Sleep -s 2
 
-## Disable Online Speech Recognition
+    ## Disable Online Speech Recognition
     Write-host "        - Disabling Online Speech Recognition." -f yellow
     If (!(Test-Path "HKCU:\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy")) {
         New-Item -Path "HKCU:\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" -Force | Out-Null}
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" -Name "HasAccepted" -Type DWord -Value 0
     Start-Sleep -s 2
 
-## Hiding personal information from lock screen
+    ## Hiding personal information from lock screen
     Write-host "        - Hiding email and domain information from sign-in screen." -f yellow
     If (!(Test-Path "HKLM:\Software\Policies\Microsoft\Windows\System")) {
             New-Item -Path "HKLM:\Software\Policies\Microsoft\Windows\System" -Force | Out-Null}
@@ -272,25 +277,25 @@ $START_MENU_LAYOUT = @"
     Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\System" -Name "DontDisplayLastUsername" -Type DWord -Value 0
     Start-Sleep -s 2
 
-## Disable diagnostic data collection
+    ## Disable diagnostic data collection
     If (!(Test-Path "HKLM:\Software\Policies\Microsoft\Windows\DataCollection")) {
             New-Item -Path "HKLM:\Software\Policies\Microsoft\Windows\DataCollection" -Force | Out-Null}
     Set-ItemProperty -Path  "HKLM:\Software\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry"  -Value 0
     Start-Sleep -s 2
     
-## Disable App Launch Tracking
+    ## Disable App Launch Tracking
     If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced")) {
             New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Force | Out-Null}
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" -Name "Start_TrackProgs" -Type DWord -Value 0
     Start-Sleep -s 2
 
-## Disable "tailored expirence"
+    ## Disable "tailored expirence"
     If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy")) {   
             New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" -Force | Out-Null}
     Set-ItemProperty -Path  "HKCU:\Software\Microsoft\Windows\CurrentVersion\Privacy" -Name "TailoredExperiencesWithDiagnosticDataEnabled"  -Value 0
     Start-Sleep -s 2
 
-## Disable Inking & Typing Personalization
+    ## Disable Inking & Typing Personalization
     If (!(Test-Path "HKCU:\Software\Microsoft\InputPersonalization")) {
     New-Item -Path "HKCU:\Software\Microsoft\InputPersonalization" -Force | Out-Null}
     Set-ItemProperty -Path  "HKCU:\Software\Microsoft\InputPersonalization" -Name "RestrictImplicitTextCollection"  -Value 1
@@ -298,7 +303,7 @@ $START_MENU_LAYOUT = @"
     Start-Sleep -s 2
     
 
-## Disabling services
+    ## Disabling services
     Write-host "      BLOCKING - Tracking startup services" -f green
     $trackingservices = @(
     "diagnosticshub.standardcollector.service" # Microsoft (R) Diagnostics Hub Standard Collector Service
@@ -315,57 +320,57 @@ $START_MENU_LAYOUT = @"
      if((Get-Service -Name $trackingservice | ? Starttype -ne Disabled)){
      Get-Service | ? name -eq $trackingservice | Set-Service -StartupType Disabled}}
     
-     ## Removing printers
+    ## Removing printers
      If (!(Test-Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")) {
             New-Item -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Force | Out-Null}
             Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Name "AutoSetup" -Type DWord -Value 0
             Get-Printer | ? Name -Like * | Remove-Printer -ErrorAction SilentlyContinue
             
 
-## Adding entries to hosts file
-    Write-host "      BLOCKING - Tracking domains (This may take a while).." -f green
-    start-sleep -s 5
-    Write-Host "        - Backing up your hostsfile.." -f Yellow
-    #Taking backup of current hosts file first
-    $hostsfile = "$env:SystemRoot\System32\drivers\etc\hosts"
-    $Takebackup = "$env:SystemRoot\System32\drivers\etc\hosts_backup"
-    Copy-Item $hostsfile $Takebackup
+    ## Adding entries to hosts file
+        Write-host "      BLOCKING - Tracking domains (This may take a while).." -f green
+        start-sleep -s 3
+        Write-Host "        - Backing up your hostsfile.." -f Yellow
+        ### Taking backup of current hosts file first
+        $hostsfile = "$env:SystemRoot\System32\drivers\etc\hosts"
+        $Takebackup = "$env:SystemRoot\System32\drivers\etc\hosts_backup"
+        Copy-Item $hostsfile $Takebackup
 
-    Write-Host "        - Getting an updated list of microsoft tracking domains" -f Yellow
-    $domain = Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt'  -UseBasicParsing
-    $domain = $domain.Content | Foreach-object { $_ -replace "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", "" } | Foreach-object { $_ -replace " ", "" }
-    $domain = $domain.Split("`n") -notlike "#*" -notmatch "spynet2.microsoft.com" -match "\w"
+        Write-Host "        - Getting an updated list of microsoft tracking domains" -f Yellow
+        $domain = Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt'  -UseBasicParsing
+        $domain = $domain.Content | Foreach-object { $_ -replace "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", "" } | Foreach-object { $_ -replace " ", "" }
+        $domain = $domain.Split("`n") -notlike "#*" -notmatch "spynet2.microsoft.com" -match "\w"
 
-    Write-Host "        - Blocking domains from tracking-list" -f Yellow
-    foreach ($domain_entry in $domain) {
-    $counter++
-            Write-Progress -Activity 'Adding entries to host file..' -CurrentOperation $domain_entry -PercentComplete (($counter /$domain.count) * 100)
-            Add-Content -Encoding UTF8  $hostsfile ("`t" + "0.0.0.0" + "`t`t" + "$domain_entry") -ErrorAction SilentlyContinue
-            Start-Sleep -Milliseconds 200
-    }
-    Write-Progress -Completed -Activity "make progress bar dissapear"
-    #flush DNS cache
-    Write-host "        - Flushing local DNS cache" -f Yellow
-    ipconfig /flushdns | Out-Null; start-Sleep 2; nbtstat -R | Out-Null; start-Sleep -s 2;
-    Stop-Process -name explorer; Start-Sleep -s 5
+        Write-Host "        - Blocking domains from tracking-list" -f Yellow
+        foreach ($domain_entry in $domain) {
+        $counter++
+                Write-Progress -Activity 'Adding entries to host file..' -CurrentOperation $domain_entry -PercentComplete (($counter /$domain.count) * 100)
+                Add-Content -Encoding UTF8  $hostsfile ("`t" + "0.0.0.0" + "`t`t" + "$domain_entry") -ErrorAction SilentlyContinue
+                Start-Sleep -Milliseconds 200
+        }
+        Write-Progress -Completed -Activity "make progress bar dissapear"
+        #### flush DNS cache
+        Write-host "        - Flushing local DNS cache" -f Yellow
+        ipconfig /flushdns | Out-Null; start-Sleep 2; nbtstat -R | Out-Null; start-Sleep -s 2;
+        Stop-Process -name explorer; Start-Sleep -s 3
 
-    # Blocking Microsoft Tracking IP's in the firewall
-    Write-host "      BLOCKING - Tracking IP's" -f green
-    Write-Host "        - Getting updated lists of Microsoft's trackin IP's" -f Yellow
-    $blockip = Invoke-WebRequest -Uri https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/firewall/spy.txt  -UseBasicParsing
-    $blockip = $blockip.Content | Foreach-object { $_ -replace "0.0.0.0 ", "" } | Out-String
-    $blockip = $blockip.Split("`n") -notlike "#*" -match "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
-    Clear-Variable -Name counter
-    Write-Host "        - Configuring blocking rules in your firewall.." -f Yellow
-    foreach ($ip_entry in $blockip) {
-    $counter++
-    Write-Progress -Activity 'Configuring firewall rules..' -CurrentOperation $ip_entry -PercentComplete (($counter /$blockip.count) * 100)
-    netsh advfirewall firewall add rule name="Block Microsoft Tracking IP: $ip_entry" dir=out action=block remoteip=$ip_entry enable=yes | Out-Null}
-    Write-Progress -Completed -Activity "make progress bar dissapear"
-    Write-Host "        - Firewall configuration complete." -f Yellow
-    start-sleep -s 3
+    ## Blocking Microsoft Tracking IP's in the firewall
+        Write-host "      BLOCKING - Tracking IP's" -f green
+        Write-Host "        - Getting updated lists of Microsoft's trackin IP's" -f Yellow
+        $blockip = Invoke-WebRequest -Uri https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/firewall/spy.txt  -UseBasicParsing
+        $blockip = $blockip.Content | Foreach-object { $_ -replace "0.0.0.0 ", "" } | Out-String
+        $blockip = $blockip.Split("`n") -notlike "#*" -match "\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+        Clear-Variable -Name counter
+        Write-Host "        - Configuring blocking rules in your firewall.." -f Yellow
+        foreach ($ip_entry in $blockip) {
+        $counter++
+        Write-Progress -Activity 'Configuring firewall rules..' -CurrentOperation $ip_entry -PercentComplete (($counter /$blockip.count) * 100)
+        netsh advfirewall firewall add rule name="Block Microsoft Tracking IP: $ip_entry" dir=out action=block remoteip=$ip_entry enable=yes | Out-Null}
+        Write-Progress -Completed -Activity "make progress bar dissapear"
+        Write-Host "        - Firewall configuration complete." -f Yellow
+        start-sleep -s 3
 
-# Send Microsoft a request to delete collected data about you.
+    # Send Microsoft a request to delete collected data about you.
     function block_input{
         $code = @"
     [DllImport("user32.dll")]
@@ -386,25 +391,27 @@ $START_MENU_LAYOUT = @"
 
     
     block_input | Out-Null
-    Write-host "      SUBMIT - request to Microsoft to delete data about you." -f green
-    Start-Sleep -s 2
-    #start navigating
-    $app = New-Object -ComObject Shell.Application
-    $key = New-Object -com Wscript.Shell
-
-    $app.open("ms-settings:privacy-feedback")
-    $key.AppActivate("Settings") | out-null
-    Start-Sleep -s 2
-    $key.SendKeys("{TAB}")
-    $key.SendKeys("{TAB}")
-    $key.SendKeys("{TAB}")
-    $key.SendKeys("{TAB}")
-    $key.SendKeys("{TAB}")
-    Start-Sleep -s 1
-    $key.SendKeys("{ENTER}")
-    Start-Sleep -s 2
-    $key.SendKeys("%{F4}")
-    Start-Sleep -s 1
     
-    #unlocking keyboard and mouse
-    allow_input | Out-Null
+    ## SUBMIT REQUEST TO MICROSOFT REGARDS DELETING DATA ABOUT YOU
+        Write-host "      SUBMIT - request to Microsoft to delete data about you." -f green
+        Start-Sleep -s 2
+        
+        $app = New-Object -ComObject Shell.Application
+        $key = New-Object -com Wscript.Shell
+
+        $app.open("ms-settings:privacy-feedback")
+        $key.AppActivate("Settings") | out-null
+        Start-Sleep -s 2
+        $key.SendKeys("{TAB}")
+        $key.SendKeys("{TAB}")
+        $key.SendKeys("{TAB}")
+        $key.SendKeys("{TAB}")
+        $key.SendKeys("{TAB}")
+        Start-Sleep -s 1
+        $key.SendKeys("{ENTER}")
+        Start-Sleep -s 2
+        $key.SendKeys("%{F4}")
+        Start-Sleep -s 1
+        
+        #unlocking keyboard and mouse
+        allow_input | Out-Null
