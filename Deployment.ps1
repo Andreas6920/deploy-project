@@ -1,28 +1,33 @@
- ## Wait for internet access
+ # Wait for internet access
  do {
   Write-Host "waiting..."; sleep 3      
 } until(Test-NetConnection google.com  | ? { $_.PingSucceeded } )  
 
 
+# Set DNS if not domain member
+if($env:USERDNSDOMAIN -eq $null){
+$nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
+Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,8.8.8.8" | out-null
+}
 
-## install chocolatey
+# install chocolatey
     write-host "Installing chocolatey"
     if (!(Test-Path "$($env:ProgramData)\chocolatey\choco.exe")) { 
-        # installing chocolatey
+        ## installing chocolatey
         Write-host "      application not found. Installing:" -f green
         Write-host "        - Preparing system.." -f yellow
         Set-ExecutionPolicy Bypass -Scope Process -Force;
-        # Downloading installtion file from original source
+        ## Downloading installtion file from original source
         Write-host "        - Downloading script.." -f yellow
         (New-Object System.Net.WebClient).DownloadFile("https://chocolatey.org/install.ps1","$env:TMP/choco-install.ps1")
-        # Adding a few lines to make installtion more silent.
+        ## Adding a few lines to make installtion more silent.
         Write-host "        - Preparing script.." -f yellow
         $add_line1 = "((Get-Content -path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1 -Raw) -replace '\| write-Output', ' | out-null' ) | Set-Content -Path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1; "
         $add_line2 = "((Get-Content -path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1 -Raw) -replace 'write-', '#write-' ) | Set-Content -Path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1; "
         $add_line3 = "((Get-Content -path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1 -Raw) -replace 'function.* #write-', 'function Write-' ) | Set-Content -Path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1;"
         ((Get-Content -path $env:TMP/choco-install.ps1 -Raw) -replace 'write-host', "#write-host" ) | Set-Content -Path $env:TMP/choco-install.ps1
         ((Get-Content -path $env:TMP/choco-install.ps1 -Raw) -replace '#endregion Download & Extract Chocolatey', "$add_line1`n$add_line2`n$add_line3" ) | Set-Content -Path $env:TMP/choco-install.ps1
-        # Executing installation file.
+        ## Executing installation file.
         Set-Location $env:TMP
         Write-host "        - Installing.." -f yellow
         .\choco-install.ps1
@@ -91,18 +96,18 @@ Write-host "      CLEANING - Start Menu" -f Green
         $layoutFile = "$env:SystemRoot\StartMenuLayout.xml"
                 
         start-sleep 5
-        #Delete layout file if it already exists
+        ### Delete layout file if it already exists
         Write-Host "        - Removing current Start Menu..." -f Yellow
         If (Test-Path $layoutFile) {
             Remove-Item $layoutFile
         }
 
-        #Creates the blank layout file
+        ### Creates the blank layout file
         Write-host "        - Creates and applying a new blank start menu..." -f Yellow
         $START_MENU_LAYOUT | Out-File $layoutFile -Encoding ASCII
         $regAliases = @("HKLM", "HKCU")
 
-        #Assign the start layout and force it to apply with "LockedStartLayout" at both the machine and user level
+        ### Assign the start layout and force it to apply with "LockedStartLayout" at both the machine and user level
         foreach ($regAlias in $regAliases) {
             $basePath = $regAlias + ":\Software\Policies\Microsoft\Windows"
             $keyPath = $basePath + "\Explorer" 
@@ -113,12 +118,12 @@ Write-host "      CLEANING - Start Menu" -f Green
             Set-ItemProperty -Path $keyPath -Name "StartLayoutFile" -Value $layoutFile
         }
 
-        #Restart Explorer, open the start menu (necessary to load the new layout), and give it a few seconds to process
+        ### Restart Explorer, open the start menu (necessary to load the new layout), and give it a few seconds to process
         Write-host "        - Restarting explorer..." -f yellow
         Stop-Process -name explorer -Force
         Start-Sleep -s 5
 
-        #Enable the ability to pin items again by disabling "LockedStartLayout"
+        ### Enable the ability to pin items again by disabling "LockedStartLayout"
         foreach ($regAlias in $regAliases) {
             $basePath = $regAlias + ":\Software\Policies\Microsoft\Windows"
             $keyPath = $basePath + "\Explorer" 
@@ -145,7 +150,7 @@ Write-host "      CLEANING - Start Menu" -f Green
         Stop-Process -name explorer
         start-sleep -s 1
     
-## Removing Microsoft Bloat
+    ## Removing Microsoft Bloat
         $ProgressPreference = "SilentlyContinue" #hide progressbar
         start-sleep 3
         $Bloatware = @(
@@ -233,7 +238,7 @@ Write-host "      CLEANING - Start Menu" -f Green
             if ((Get-ScheduledTask | ? state -ne Disabled | ? TaskName -like $BloatSchedule)){
             Get-ScheduledTask | ? Taskname -eq $BloatSchedule | Disable-ScheduledTask | Out-Null}}   
     
-## Remove Windows pre-installed bloat printers (Fax, PDF, OneNote) These are almost never used.
+    ## Remove Windows pre-installed bloat printers (Fax, PDF, OneNote) These are almost never used.
         If (!(Test-Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private")) {
         New-Item -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\NcdAutoSetup\Private" -Force | Out-Null
         }
@@ -372,22 +377,3 @@ Write-host "      CLEANING - Start Menu" -f Green
         Write-Progress -Completed -Activity "make progress bar dissapear"
         Write-Host "        - Firewall configuration complete." -f Yellow
         start-sleep -s 3
-
-    # Send Microsoft a request to delete collected data about you.
-    function block_input{
-        $code = @"
-    [DllImport("user32.dll")]
-    public static extern bool BlockInput(bool fBlockIt);
-"@
-        $userInput = Add-Type -MemberDefinition $code -Name UserInput -Namespace UserInput -PassThru
-        $userInput::BlockInput($true)
-        }
-
-    function allow_input{
-        $code = @"
-    [DllImport("user32.dll")]
-    public static extern bool BlockInput(bool fBlockIt);
-"@
-        $userInput = Add-Type -MemberDefinition $code -Name UserInput -Namespace UserInput -PassThru
-        $userInput::BlockInput($false)
-        }
