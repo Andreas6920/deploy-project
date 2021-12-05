@@ -1,4 +1,7 @@
-   
+ ## Wait for internet access
+ do {
+  Write-Host "waiting..."; sleep 3      
+} until(Test-NetConnection google.com  | ? { $_.PingSucceeded } )  
 
 
 
@@ -388,30 +391,3 @@ Write-host "      CLEANING - Start Menu" -f Green
         $userInput = Add-Type -MemberDefinition $code -Name UserInput -Namespace UserInput -PassThru
         $userInput::BlockInput($false)
         }
-
-    
-    block_input | Out-Null
-    
-    ## SUBMIT REQUEST TO MICROSOFT REGARDS DELETING DATA ABOUT YOU
-        Write-host "      SUBMIT - request to Microsoft to delete data about you." -f green
-        Start-Sleep -s 2
-        
-        $app = New-Object -ComObject Shell.Application
-        $key = New-Object -com Wscript.Shell
-
-        $app.open("ms-settings:privacy-feedback")
-        $key.AppActivate("Settings") | out-null
-        Start-Sleep -s 2
-        $key.SendKeys("{TAB}")
-        $key.SendKeys("{TAB}")
-        $key.SendKeys("{TAB}")
-        $key.SendKeys("{TAB}")
-        $key.SendKeys("{TAB}")
-        Start-Sleep -s 1
-        $key.SendKeys("{ENTER}")
-        Start-Sleep -s 2
-        $key.SendKeys("%{F4}")
-        Start-Sleep -s 1
-        
-        #unlocking keyboard and mouse
-        allow_input | Out-Null
