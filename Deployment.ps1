@@ -1,78 +1,20 @@
- # Wait for internet access
- do {
-  Write-Host "waiting..."; sleep 3      
-} until(Test-NetConnection google.com  | ? { $_.PingSucceeded } )  
-
-
 # Set DNS if not domain member
-if($env:USERDNSDOMAIN -eq $null){
-$nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
-Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,8.8.8.8" | out-null
-}
+
+    if($env:USERDNSDOMAIN -eq $null){
+    $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
+    Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | out-null}
 
 # install chocolatey
-    write-host "Installing chocolatey"
-    if (!(Test-Path "$($env:ProgramData)\chocolatey\choco.exe")) { 
-        ## installing chocolatey
-        Write-host "      application not found. Installing:" -f green
-        Write-host "        - Preparing system.." -f yellow
-        Set-ExecutionPolicy Bypass -Scope Process -Force;
-        ## Downloading installtion file from original source
-        Write-host "        - Downloading script.." -f yellow
-        (New-Object System.Net.WebClient).DownloadFile("https://chocolatey.org/install.ps1","$env:TMP/choco-install.ps1")
-        ## Adding a few lines to make installtion more silent.
-        Write-host "        - Preparing script.." -f yellow
-        $add_line1 = "((Get-Content -path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1 -Raw) -replace '\| write-Output', ' | out-null' ) | Set-Content -Path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1; "
-        $add_line2 = "((Get-Content -path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1 -Raw) -replace 'write-', '#write-' ) | Set-Content -Path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1; "
-        $add_line3 = "((Get-Content -path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1 -Raw) -replace 'function.* #write-', 'function Write-' ) | Set-Content -Path $env:TMP\chocolatey\chocoInstall\tools\chocolateysetup.psm1;"
-        ((Get-Content -path $env:TMP/choco-install.ps1 -Raw) -replace 'write-host', "#write-host" ) | Set-Content -Path $env:TMP/choco-install.ps1
-        ((Get-Content -path $env:TMP/choco-install.ps1 -Raw) -replace '#endregion Download & Extract Chocolatey', "$add_line1`n$add_line2`n$add_line3" ) | Set-Content -Path $env:TMP/choco-install.ps1
-        ## Executing installation file.
-        Set-Location $env:TMP
-        Write-host "        - Installing.." -f yellow
-        .\choco-install.ps1
-        Write-host "        - Installation complete.." -f yellow}
-        
-        Start-Sleep -s 3
-
-        Add-Type -AssemblyName System.Windows.Forms
-        $global:balloon = New-Object System.Windows.Forms.NotifyIcon
-        $path = (Get-Process -id $pid).Path
-        $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path) 
-        $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
-        $balloon.BalloonTipText = 'Google Chrome Browser'
-        $balloon.BalloonTipTitle = "Installing Chrome..." 
-        $balloon.Visible = $true 
-        $balloon.ShowBalloonTip(50000)
-        choco install googlechrome -y --ignore-checksums --force | out-null
-
-        Start-Sleep -s 3
-
-        Add-Type -AssemblyName System.Windows.Forms
-        $global:balloon = New-Object System.Windows.Forms.NotifyIcon
-        $path = (Get-Process -id $pid).Path
-        $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path) 
-        $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
-        $balloon.BalloonTipText = '7-zip'
-        $balloon.BalloonTipTitle = "Installing 7-zip..." 
-        $balloon.Visible = $true 
-        $balloon.ShowBalloonTip(50000)
-        choco install 7Zip -y | out-null
-        
-        Start-Sleep -s 3
-
-        Add-Type -AssemblyName System.Windows.Forms
-        $global:balloon = New-Object System.Windows.Forms.NotifyIcon
-        $path = (Get-Process -id $pid).Path
-        $balloon.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path) 
-        $balloon.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
-        $balloon.BalloonTipText = 'VLC Media player'
-        $balloon.BalloonTipTitle = "Installing VLC..." 
-        $balloon.Visible = $true 
-        $balloon.ShowBalloonTip(50000)
-        choco install VLC -y | out-null
-        
-        Start-Sleep -s 3
+    
+    iwr -useb https://raw.githubusercontent.com/Andreas6920/WinOptimizer/main/res/app-install.ps1| iex
+    
+    Appinstall -Name "Google Chrome" -App "googlechrome"
+    Appinstall -Name "7-Zip" -App "7Zip"
+    Appinstall -Name "VLC Media player" -App "VLC"
+    
+    Start-Process Powershell -argument "-Ep bypass -Windowstyle hidden -file `"""$($env:ProgramData)\Winoptimizer\appinstall.ps1""`""
+    
+    Start-Sleep -s 3
 
        
 # Windows Cleaning Lady 
