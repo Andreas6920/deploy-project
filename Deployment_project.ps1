@@ -17,7 +17,6 @@
     Import-Module $path
     
 # Intall apps
-    
     Start-Job -Name Install -ScriptBlock { Install-app -Name "chrome, vlc, 7zip, adobe, office2016"}
     Start-WinAntiBloat
     Start-WinSecurity
@@ -29,8 +28,8 @@
     # default zip, rar, img to 7zip
 
 # Install All printers
+    # Install-Printer -Department Kontor
     # Install-Printer -Number 20
-    # Install-Printer -Department Salg
     # Install-Printer -All
     # Install-Printer -Test
 
