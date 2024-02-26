@@ -1,5 +1,5 @@
 ﻿# TLS upgrade
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # Set DNS if NOT domain member
     if($env:USERDNSDOMAIN -eq $null){
@@ -29,7 +29,10 @@
     # default zip, rar, img to 7zip
 
 # Install All printers
-
+    # Install-Printer -Number 20
+    # Install-Printer -Department Salg
+    # Install-Printer -All
+    # Install-Printer -Test
 
 # Activate Office and Windows
     & ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /HWID
