@@ -24,7 +24,7 @@
 # Set default apps
     # default browser to chrome    
     # default pdf to adbobe reader
-    # defualt video to vlc
+    # default video to vlc
     # default zip, rar, img to 7zip
 
 # Install All printers
