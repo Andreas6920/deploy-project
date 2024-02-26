@@ -53,15 +53,15 @@
         # Install-Printer -Test
 
 # Activate Windows if it's not acitvated yet
-Write-host "`t`t- Checking if Windows is activated" -f Yellow
-$licenseStatus = Get-CimInstance -ClassName SoftwareLicensingProduct | Where-Object { $_.ApplicationID -eq "55c92734-d682-4d71-983e-d6ec3f16059f" } | Select-Object -Property LicenseStatus
-if ($licenseStatus.LicenseStatus -ne  1) {Write-host "`t`t`t- It's not. starting activation." -f Yellow; & ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /HWID} 
-else{Write-host "`t`t`t- It is already activated." -f Yellow}
+    Write-host "`t`t- Checking if Windows is activated" -f Yellow
+    $licenseStatus = Get-CimInstance -ClassName SoftwareLicensingProduct | Where-Object { $_.ApplicationID -eq "55c92734-d682-4d71-983e-d6ec3f16059f" } | Select-Object -Property LicenseStatus
+    if ($licenseStatus.LicenseStatus -ne  1) {Write-host "`t`t`t- It's not. starting activation." -f Yellow; & ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /HWID} 
+    else{Write-host "`t`t`t- It is already activated." -f Yellow}
 
 # Activate Microsoft Office 2016, but waiting for it to be finished installing
-Write-host "`t`t- Waiting for Microsoft office to be installed" -f Yellow
-do{Start-Sleep -S 10}until((test-path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk") -eq $true) Start-Sleep -S 30
-Write-host "`t`t`t- Activating" -f Yellow
-& ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /Ohook 
+    Write-host "`t`t- Waiting for Microsoft office to be installed" -f Yellow
+    do{Start-Sleep -S 10}until((test-path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk") -eq $true) Start-Sleep -S 30
+    Write-host "`t`t`t- Activating" -f Yellow
+    & ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /Ohook 
 
 
