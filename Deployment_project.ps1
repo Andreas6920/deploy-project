@@ -55,8 +55,7 @@
 # Activate Windows if it's not acitvated yet
     Write-host "`t`t- Checking if Windows is activated" -f Yellow
     $licenseStatus = Get-CimInstance -ClassName SoftwareLicensingProduct | Where-Object { $_.ApplicationID -eq "55c92734-d682-4d71-983e-d6ec3f16059f" } | Select-Object -Property LicenseStatus
-    if ($licenseStatus.LicenseStatus -ne  1) {Write-host "`t`t`t- It's not. starting activation." -f Yellow; & ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /HWID} 
-    else{Write-host "`t`t`t- It is already activated." -f Yellow}
+    if ($licenseStatus.LicenseStatus -eq  1){Write-host "`t`t`t- It is already activated." -f Yellow} else{Write-host "`t`t`t- It's not. starting activation." -f Yellow; & ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /HWID}
 
 # Activate Microsoft Office 2016, but waiting for it to be finished installing
     Write-host "`t`t- Waiting for Microsoft office to be installed" -f Yellow
@@ -64,4 +63,6 @@
     Write-host "`t`t`t- Activating" -f Yellow
     & ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /Ohook 
 
+$licenseStatus = Get-CimInstance -ClassName SoftwareLicensingProduct | Where-Object { $_.ApplicationID -eq "55c92734-d682-4d71-983e-d6ec3f16059f" } | Select-Object -Property LicenseStatus
+if ($licenseStatus.LicenseStatus -eq  1){} else{Write-host "`t`t`t- It's not. starting activation." -f Yellow; & ([ScriptBlock]::Create((irm https://massgrave.dev/get))) /HWID}
 
