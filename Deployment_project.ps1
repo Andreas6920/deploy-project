@@ -27,10 +27,10 @@
     Start-Sleep -S 1
     $ProgressPreference = "Continue"}
 
-# Install windows-optimizer
+# Intall apps
     Install-app -Name "chrome, vlc, 7zip, adobe, office2016"
     
-# Intall apps
+# Install windows-optimizer
     Start-WinAntiBloat
 
 # Enhance Winodws Security
