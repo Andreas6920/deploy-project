@@ -41,9 +41,14 @@
 
 
 # Set default apps
-    # default browser to chrome    
+    irm -useb "https://raw.githubusercontent.com/DanysysTeam/PS-SFTA/master/SFTA.ps1" -O "$env:TMP\1.ps1"; ipmo "$env:TMP\1.ps1";
+
+    # default browser to chrome 
+        Set-PTA ChromeHTML http
+        Set-PTA ChromeHTML https
     # default pdf to adbobe reader
-    # defualt video to vlc
+        Set-FTA AcroExch.Document.DC .pdf
+    # default video to vlc
     # default zip, rar, img to 7zip
 
 # Install All printers
