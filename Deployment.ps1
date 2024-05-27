@@ -14,27 +14,27 @@
     # Klargøring
         # Modtager brugertastning
             Write-Host "`t- Indtast Fornavn:" -nonewline -f green;
-            $New_PCNAME_FORNAVN = Read-Host " "
-            $New_PCNAME_FORNAVN = $New_PCNAME_FORNAVN.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
+            $Forename = Read-Host " "
+            $Forename = $Forename.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
             Write-Host "`t- Indtast Efternavn:" -nonewline -f green;
-            $New_PCNAME_EFTERNAVN = Read-Host " "
-            $New_PCNAME_EFTERNAVN = $New_PCNAME_EFTERNAVN.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
+            $Lastname = Read-Host " "
+            $Lastname = $Lastname.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
         # COMPUTER NAVN
-            $PC_NAME = "PC-"+$New_PCNAME_FORNAVN.Substring(0,3).ToUpper()+$New_PCNAME_EFTERNAVN.Substring(0,3).ToUpper()
+            $PCName = "PC-"+$Forename.Substring(0,3).ToUpper()+$Lastname.Substring(0,3).ToUpper()
         # COMPUTER BESKRIVELSE
-            if ($New_PCNAME_EFTERNAVN -notlike "*s"){$New_PCNAME_EFTERNAVN = $New_PCNAME_EFTERNAVN + "'s"}
-            else{$New_PCNAME_EFTERNAVN = $New_PCNAME_EFTERNAVN + "'"}
-            $New_PCNAME_EFTERNAVN = (Get-Culture).TextInfo.ToTitleCase($New_PCNAME_EFTERNAVN)
-            $New_PCNAME_FORNAVN = (Get-Culture).TextInfo.ToTitleCase($New_PCNAME_FORNAVN)
-            $New_Description = $New_PCNAME_FORNAVN+" "+$New_PCNAME_EFTERNAVN + " PC"
+            if ($Lastname -notlike "*s"){$Lastname = $Lastname + "'s"}
+            else{$Lastname = $Lastname + "'"}
+            $Lastname = (Get-Culture).TextInfo.ToTitleCase($Lastname)
+            $Forename = (Get-Culture).TextInfo.ToTitleCase($Forename)
+            $PCDescription = $Forename+" "+$Lastname + " PC"
     # Navngiv PC
         # Omdøb PC
-            Write-Host "`t`t- COMPUTERNAVN:`t`t$PC_NAME" -f Yellow;
-            if($PC_NAME -eq $env:COMPUTERNAME){Rename-computer -newname $PC_NAME}
+            Write-Host "`t`t- COMPUTERNAVN:`t`t$PCName" -f Yellow;
+            if($PCName -eq $env:COMPUTERNAME){Rename-computer -newname $PCName}
         # Omdøb PC Beskrivelse
-            Write-Host "`t`t- BESKRIVELSE:`t`t$New_Description" -f Yellow;
+            Write-Host "`t`t- BESKRIVELSE:`t`t$PCDescription" -f Yellow;
             $ThisPCDescription = Get-WmiObject -class Win32_OperatingSystem
-            $ThisPCDescription.Description = $New_Description
+            $ThisPCDescription.Description = $PCDescription
             $ThisPCDescription.put() | out-null
             $WarningPreference = "Continue"
             Write-host "`t- Computeren navngives ved næste genstart." -f Green
@@ -45,10 +45,16 @@
     Invoke-WebRequest -Uri $Link -OutFile $Path -UseBasicParsing
     Import-Module $path
 
-# Intall and clean Windows
+# Intall applications and clean Windows
     Install-app -Name "chrome, vlc, 7zip, adobe"
     Start-WinAntiBloat
     Start-WinSecurity
 
 # Message
-    msg * "Complete"
+    Add-Type -AssemblyName System.Windows.Forms | Out-Null
+    [System.Windows.Forms.Application]::EnableVisualStyles()
+    $btn = [System.Windows.Forms.MessageBoxButtons]::OK
+    $ico = [System.Windows.Forms.MessageBoxIcon]::Information
+    $Title = 'Microsoft Windows Deployment'
+    $Message = 'Deployment complete!'
+    $Return = [System.Windows.Forms.MessageBox]::Show($Message, $Title, $btn, $ico)
