@@ -30,7 +30,7 @@
     # Navngiv PC
         # Omdøb PC
             Write-Host "`t`t- COMPUTERNAVN:`t`t$PCName" -f Yellow;
-            if($PCName -eq $env:COMPUTERNAME){Rename-computer -newname $PCName}
+            if($PCName -ne $env:COMPUTERNAME){Rename-computer -newname $PCName}
         # Omdøb PC Beskrivelse
             Write-Host "`t`t- BESKRIVELSE:`t`t$PCDescription" -f Yellow;
             $ThisPCDescription = Get-WmiObject -class Win32_OperatingSystem
