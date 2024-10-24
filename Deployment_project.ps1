@@ -59,6 +59,9 @@ Import-Module $path
 Start-WinAntiBloat
 Start-WinSecurity
 
+## Install printer
+    ### Måske job baggrundsjob
+
 # App installation
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
@@ -77,6 +80,7 @@ Write-Host "[$date]`t- Activating Office" get-date -f green
     start-sleep -s 30; & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
 Write-Host "[$date]`t- Activating Windows" get-date -f green
     start-sleep -s 10; & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID
+
 
 # Action1
 irm "https://raw.githubusercontent.com/Andreas6920/Other/main/scripts/action.ps1" | iex
