@@ -1,6 +1,6 @@
 ﻿# Start
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+[System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
 Do{sleep 15}until((Test-Connection github.com -Quiet) -eq $true)
 $date = get-date -f "yyyy/MM/dd - HH:mm:ss"
 
@@ -47,46 +47,50 @@ $ProgressPreference = "Continue"}
 
 # Start
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    [System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
     Do{sleep 15}until((Test-Connection github.com -Quiet) -eq $true)
     $date = get-date -f "yyyy/MM/dd - HH:mm:ss"
 
 # Configure Windows
     $url = "https://git.io/JzrB5"
     $path = Join-path -Path $env:TMP -Childpath "Winoptimizer.ps1"
-    Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing
-    Import-Module $path
+    irm $url -OutFile $path
+    . $path
+
     Start-WinAntiBloat
     Start-WinSecurity
 
-## Install printer
-    ### Måske job baggrundsjob
+# Install printer
+    $url = "https://git.io/JzrB5"
+    $path = Join-path -Path $env:TMP -Childpath "Printer-Installation.ps1"
+    irm $url -OutFile $path
+    . $path
 
-# App installation
-    Set-ExecutionPolicy Bypass -Scope Process -Force;
-
-# Install chocolatey
-    Write-Host "[$date]`t- Removing Chocolatey" -f green
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; 
-    iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    Install-Printer -All -NavisionPrinter
 
 # Install Applications
-    Write-Host "[$date]`t- Installing Applications:" -f green
-    Write-Host "[$date]`t`t- Removing office bloat" -f green
-        "Microsoft.MicrosoftOfficeHub","Microsoft.Office.OneNote" | %{ if (Get-AppxPackage | Where-Object Name -Like $_){Get-AppxPackage | Where-Object Name -Like $_ | Remove-AppxPackage; Start-Sleep -S 5}}
-    Write-Host "[$date]`t`t- Installing office" get-date -f green
-        choco install microsoft-office-deployment --params="'/Product:ProfessionalRetail /64bit /ProofingToolLanguage:da-dk,en-us'" -y
-    Write-Host "[$date]`t`t- Installing Chrome" get-date -f green
-        choco install googlechrome --ignore-checksums -y
-    Write-Host "[$date]`t`t- Installing VLC" get-date -f green
-        choco install vlc -y
-    Write-Host "[$date]`t`t- Installing 7-zip" get-date -f green
-        choco install 7zip.install -y
-    Write-Host "[$date]`t`t- Activating Office" get-date -f green
-        start-sleep -s 30; & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
-    Write-Host "[$date]`t`t- Activating Windows" get-date -f green
-        start-sleep -s 10; & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID
+    $url = "https://community.chocolatey.org/install.ps1"
+    $path = Join-path -Path $env:TMP -Childpath "ChocolateyInstall.ps1"
+    Write-Host "[$date]`t- Preparing Application Installation." -f green
+    irm $url -OutFile $path
+    . $path
+
+    ## Install Applications
+        Write-Host "[$date]`t- Installing Applications:" -f green
+        Write-Host "[$date]`t`t- Removing office bloat" -f Yellow
+            "Microsoft.MicrosoftOfficeHub","Microsoft.Office.OneNote" | %{ if (Get-AppxPackage | Where-Object Name -Like $_){Get-AppxPackage | Where-Object Name -Like $_ | Remove-AppxPackage; Start-Sleep -S 5}}
+        Write-Host "[$date]`t`t- Installing office (This step may take a while...)" get-date -f Yellow
+            choco install microsoft-office-deployment --params="'/Product:ProfessionalRetail /64bit /ProofingToolLanguage:da-dk,en-us'" -r -y
+        Write-Host "[$date]`t`t- Installing Chrome" get-date -f Yellow
+            choco install googlechrome --ignore-checksums -r -y
+        Write-Host "[$date]`t`t- Installing VLC" get-date -f Yellow
+            choco install vlc -y -r
+        Write-Host "[$date]`t`t- Installing 7-zip" get-date -f Yellow
+            choco install 7zip.install -y -r -r
+        Write-Host "[$date]`t`t- Activating Office" get-date -f Yellow
+            start-sleep -s 30; & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
+        Write-Host "[$date]`t`t- Activating Windows" get-date -f Yellow
+            start-sleep -s 10; & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID
 
 # Install Endpoint Protection
 
