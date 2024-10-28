@@ -4,7 +4,7 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 Do { sleep 15 } until ((Test-Connection github.com -Quiet) -eq $true)
 
 # Funktion til at få det aktuelle tidspunkt
-function Get-LogDate {return (Get-Date -f "yyyy/MM/dd - HH:mm:ss")}
+function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:MM:ss]")}
 
 # Configure Windows
     $url = "https://git.io/JzrB5"
@@ -28,11 +28,12 @@ function Get-LogDate {return (Get-Date -f "yyyy/MM/dd - HH:mm:ss")}
     # Install Chocolatey
     $url = "https://community.chocolatey.org/install.ps1"
     $path = Join-Path -Path $env:TMP -ChildPath "ChocolateyInstall.ps1"
+    $logpath = Join-Path -Path $env:TMP -ChildPath "ChocolateyLogs.txt"
     Write-Host "[$(Get-LogDate)]`t- Preparing Application Installation." -ForegroundColor Green
     irm $url -OutFile $path
     . $path
 
-    ## Install Applications
+    ## Install applications with chocolatey
     Write-Host "[$(Get-LogDate)]`t- Installing Applications:" -ForegroundColor Green
     Write-Host "[$(Get-LogDate)]`t`t- Removing office bloat" -ForegroundColor Yellow
     "Microsoft.MicrosoftOfficeHub", "Microsoft.Office.OneNote" | ForEach-Object {
@@ -40,13 +41,13 @@ function Get-LogDate {return (Get-Date -f "yyyy/MM/dd - HH:mm:ss")}
             Get-AppxPackage | Where-Object Name -Like $_ | Remove-AppxPackage; Start-Sleep -Seconds 5}}
             
     Write-Host "[$(Get-LogDate)]`t`t- Installing office (This step may take a while...)" -ForegroundColor Yellow
-    choco install microsoft-office-deployment --params="'/Product:ProfessionalRetail /64bit /ProofingToolLanguage:da-dk,en-us'" -r -y
+    choco install microsoft-office-deployment --params="'/Product:ProfessionalRetail /64bit /ProofingToolLanguage:da-dk,en-us'" -y --log-file=$logpath | Out-Null
     Write-Host "[$(Get-LogDate)]`t`t- Installing Chrome" -ForegroundColor Yellow
-    choco install googlechrome --ignore-checksums -r -y
+    choco install googlechrome --ignore-checksums -y --log-file=$logpath | Out-Null
     Write-Host "[$(Get-LogDate)]`t`t- Installing VLC" -ForegroundColor Yellow
-    choco install vlc -y -r
+    choco install vlc -y --log-file=$logpath | Out-Null
     Write-Host "[$(Get-LogDate)]`t`t- Installing 7-zip" -ForegroundColor Yellow
-    choco install 7zip.install -y -r
+    choco install 7zip.install -y --log-file=$logpath | Out-Null
     Write-Host "[$(Get-LogDate)]`t`t- Activating Office" -ForegroundColor Yellow
     start-sleep -s 30; & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
     Write-Host "[$(Get-LogDate)]`t`t- Activating Windows" -ForegroundColor Yellow

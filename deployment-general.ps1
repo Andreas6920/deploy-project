@@ -4,7 +4,7 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 Do { sleep 15 } until ((Test-Connection github.com -Quiet) -eq $true)
 
 # Funktion til at få det aktuelle tidspunkt
-function Get-LogDate {return (Get-Date -f "yyyy/MM/dd - HH:mm:ss")}
+function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:MM:ss]")}
 
 # Configure Windows
     $url = "https://git.io/JzrB5"
