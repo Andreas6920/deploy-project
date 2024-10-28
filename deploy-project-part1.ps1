@@ -4,9 +4,12 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 Do{sleep 15}until((Test-Connection github.com -Quiet) -eq $true)
 $date = get-date -f "yyyy/MM/dd - HH:mm:ss"
 
+# Funktion til at få det aktuelle tidspunkt
+function Get-LogDate {return (Get-Date -f "yyyy/MM/dd - HH:mm:ss")}
+
 # Set DNS to cloudflare for optimized performance
 if($env:USERDNSDOMAIN -eq $null){
-Write-Host "[$date]`t- Setting DNS" -f green
+Write-Host "[$(Get-LogDate)]`t- Indstiller DNS." -ForegroundColor Green
 $ProgressPreference = "SilentlyContinue"
 Start-Sleep -S 1
 $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
@@ -16,6 +19,7 @@ $ProgressPreference = "Continue"}
 
 # Rename PC
     # Klargøring
+        Write-Host "[$(Get-LogDate)]`t- Omdøber PC." -ForegroundColor Green
         # Modtager brugertastning
             Write-Host "`t- Indtast Fornavn:" -nonewline -f green;
             $Forename = Read-Host " "
@@ -31,6 +35,7 @@ $ProgressPreference = "Continue"}
             $Lastname = (Get-Culture).TextInfo.ToTitleCase($Lastname)
             $Forename = (Get-Culture).TextInfo.ToTitleCase($Forename)
             $PCDescription = $Forename+" "+$Lastname + " PC"
+    
     # Navngiv PC
         # Omdøb PC
             Write-Host "`t`t- COMPUTERNAVN:`t`t$PCName" -f Yellow;
@@ -41,10 +46,10 @@ $ProgressPreference = "Continue"}
             $ThisPCDescription.Description = $PCDescription
             $ThisPCDescription.put() | out-null
             $WarningPreference = "Continue"
-            Write-Host "`t- Computeren navngives ved næste genstart." -f Green
-
+            Write-Host "[$(Get-LogDate)]`t- Computeren navngives ved næste genstart." -ForegroundColor Green
 
  # Prepare script after reboot
+        Write-Host "[$(Get-LogDate)]`t- Forbereder næste genstart." -ForegroundColor Green
         $url = 
         $path = 'C:\ProgramData\post-reboot-setup.ps1'
         irm -uri $url -OutFile $path
@@ -56,4 +61,6 @@ $ProgressPreference = "Continue"}
         Register-ScheduledTask -TaskName $Name  -Principal $principal -Action $action -Trigger $trigger -Force | Out-Null 
 
     # Restart-PC
+        Write-Host "[$(Get-LogDate)]`t- Genstarter PC." -ForegroundColor Green
+        Start-Sleep -Seconds 10
         Restart-PC -Force
