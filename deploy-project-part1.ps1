@@ -19,21 +19,20 @@ Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green
 # Set DNS to cloudflare for optimized performance
 if($env:USERDNSDOMAIN -eq $null){
 Write-Host "[$(Get-LogDate)]`t- Indstiller DNS." -ForegroundColor Green
-$ProgressPreference = "SilentlyContinue"
 Start-Sleep -S 1
-$nic = (Test-NetConnection -ComputerName www.google.com -InformationLevel Quiet).InterfaceAlias
+$nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
 Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | out-null
-Start-Sleep -S 1
-$ProgressPreference = "Continue"}
+Start-Sleep -S 1}
+
 
 # Rename PC
     # Klargøring
         Write-Host "[$(Get-LogDate)]`t- Navngiver PC." -ForegroundColor Green
         # Modtager brugertastning
-            Write-Host "`t- Indtast Fornavn:" -nonewline -f yellow;
+            Write-Host "`t- Indtast Fornavn: " -nonewline -f yellow;
             $Forename = Read-Host
             $Forename = $Forename.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
-            Write-Host "`t- Indtast Efternavn:" -nonewline -f yellow;
+            Write-Host "`t- Indtast Efternavn: " -nonewline -f yellow;
             $Lastname = Read-Host
             $Lastname = $Lastname.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
         # COMPUTER NAVN
@@ -47,6 +46,7 @@ $ProgressPreference = "Continue"}
     
     # Navngiv PC
         # Omdøb PC
+            $WarningPreference = "SilentlyContinue"
             Write-Host "`t`t- COMPUTERNAVN:`t`t$PCName" -f Yellow;
             if($PCName -ne $env:COMPUTERNAME){Rename-computer -newname $PCName}
         # Omdøb PC Beskrivelse
