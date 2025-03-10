@@ -13,12 +13,15 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:MM:ss")}
 
 # Configure Windows
+    Write-Host "[$(Get-LogDate)]`t- Opsætter Windows:" -ForegroundColor Green
     $url = "https://git.io/JzrB5"
     $path = Join-Path -Path $env:TMP -ChildPath "Winoptimizer.ps1"
     irm $url -OutFile $path
     Import-Module $path
 
+    Write-Host "[$(Get-LogDate)]`t`t- Renser windows" -ForegroundColor Yellow
     Start-WinAntiBloat
+    Write-Host "[$(Get-LogDate)]`t`t- Styrker windows" -ForegroundColor Yellow
     Start-WinSecurity
 
 # Install printer
@@ -65,6 +68,9 @@ function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:MM:ss")}
 
 # Action1
     irm "https://raw.githubusercontent.com/Andreas6920/Other/main/scripts/action.ps1" | iex
+
+
+# Remove Scheduled task
 
 # Message
     Add-Type -AssemblyName System.Windows.Forms | Out-Null
