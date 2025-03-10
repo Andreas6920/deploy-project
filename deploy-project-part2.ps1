@@ -10,7 +10,7 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 
 # Funktion til at få det aktuelle tidspunkt
-function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:MM:ss")}
+function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
 
 # Configure Windows
     Write-Host "[$(Get-LogDate)]`t- Opsætter Windows:" -ForegroundColor Green
