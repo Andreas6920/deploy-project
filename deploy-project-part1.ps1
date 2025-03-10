@@ -1,10 +1,20 @@
 # Start
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-[System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
-Do{sleep 15}until((Test-Connection github.com -Quiet) -eq $true)
+
+#reinsure admin rights
+If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+{
+    # Relaunch as an elevated process
+    $Script = $MyInvocation.MyCommand.Path
+    Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy RemoteSigned", "-File `"$Script`""
+}
 
 # Funktion til at få det aktuelle tidspunkt
-function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:MM:ss]")}
+function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:MM:ss")}
+
+# Opgrader TLS
+[System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
+Do{sleep 15}until((Test-Connection github.com -Quiet) -eq $true)
 
 # Set DNS to cloudflare for optimized performance
 if($env:USERDNSDOMAIN -eq $null){
@@ -62,4 +72,4 @@ $ProgressPreference = "Continue"}
     # Restart-PC
         Write-Host "[$(Get-LogDate)]`t- Genstarter PC." -ForegroundColor Green
         Start-Sleep -Seconds 10
-        Restart-PC -Force
+        Restart-Computer -Force
