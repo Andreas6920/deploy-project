@@ -13,17 +13,15 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:MM:ss")}
 
 # Opgrader TLS
-$ProgressPreference = "SilentlyContinue"
 Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green
 [System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
-Do{sleep 15}until((Test-Connection github.com -Quiet) -eq $true)
 
 # Set DNS to cloudflare for optimized performance
 if($env:USERDNSDOMAIN -eq $null){
 Write-Host "[$(Get-LogDate)]`t- Indstiller DNS." -ForegroundColor Green
 $ProgressPreference = "SilentlyContinue"
 Start-Sleep -S 1
-$nic = (Test-NetConnection -ComputerName www.google.com -Quiet).InterfaceAlias
+$nic = (Test-NetConnection -ComputerName www.google.com -InformationLevel Quiet).InterfaceAlias
 Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | out-null
 Start-Sleep -S 1
 $ProgressPreference = "Continue"}
