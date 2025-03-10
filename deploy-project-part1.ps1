@@ -13,6 +13,7 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:MM:ss")}
 
 # Opgrader TLS
+Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green
 [System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
 Do{sleep 15}until((Test-Connection github.com -Quiet) -eq $true)
 
@@ -28,12 +29,12 @@ $ProgressPreference = "Continue"}
 
 # Rename PC
     # Klargøring
-        Write-Host "[$(Get-LogDate)]`t- Omdøber PC." -ForegroundColor Green
+        Write-Host "[$(Get-LogDate)]`t- Navngiver PC." -ForegroundColor Green
         # Modtager brugertastning
-            Write-Host "`t- Indtast Fornavn:" -nonewline -f green;
+            Write-Host "`t- Indtast Fornavn:" -nonewline -f yellow;
             $Forename = Read-Host " "
             $Forename = $Forename.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
-            Write-Host "`t- Indtast Efternavn:" -nonewline -f green;
+            Write-Host "`t- Indtast Efternavn:" -nonewline -f yellow;
             $Lastname = Read-Host " "
             $Lastname = $Lastname.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
         # COMPUTER NAVN
@@ -55,15 +56,15 @@ $ProgressPreference = "Continue"}
             $ThisPCDescription.Description = $PCDescription
             $ThisPCDescription.put() | out-null
             $WarningPreference = "Continue"
-            Write-Host "[$(Get-LogDate)]`t- Computeren navngives ved næste genstart." -ForegroundColor Green
+            Write-Host "[$(Get-LogDate)]`t- Computeren navngives ved genstart." -ForegroundColor Green
 
  # Prepare script after reboot
-        Write-Host "[$(Get-LogDate)]`t- Forbereder næste genstart." -ForegroundColor Green
-        $url = 
+        Write-Host "[$(Get-LogDate)]`t- Forbereder genstart." -ForegroundColor Green
+        $url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/deploy-project-part2.ps1"
         $path = 'C:\ProgramData\post-reboot-setup.ps1'
         irm -uri $url -OutFile $path
         #Setting to start after reboot
-        $name = 'port-reboot-setup'
+        $name = 'post-reboot-setup'
         $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ep bypass -file $path"
         $principal = New-ScheduledTaskPrincipal -UserId $env:username -LogonType ServiceAccount -RunLevel Highest
         $trigger = New-ScheduledTaskTrigger -AtLogOn
