@@ -66,7 +66,7 @@ if($env:USERDNSDOMAIN -eq $null){
         $trigger = New-ScheduledTaskTrigger -AtLogOn
         Register-ScheduledTask -TaskName $Name  -Principal $principal -Action $action -Trigger $trigger -Force | Out-Null 
 
-    # Restart-PC
-        Write-Host "[$(Get-LogDate)]`t- Genstarter PC." -ForegroundColor Green
-        Wait-Job -Id $job.Id
-        Restart-Computer -Force
+# Restart-PC
+    Write-Host "[$(Get-LogDate)]`t- Genstarter PC.." -ForegroundColor Green
+    Wait-Job -Id $job.Id | Out-Null
+    Restart-Computer -Force
