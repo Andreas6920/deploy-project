@@ -31,10 +31,10 @@ $ProgressPreference = "Continue"}
         Write-Host "[$(Get-LogDate)]`t- Navngiver PC." -ForegroundColor Green
         # Modtager brugertastning
             Write-Host "`t- Indtast Fornavn:" -nonewline -f yellow;
-            $Forename = Read-Host " "
+            $Forename = Read-Host
             $Forename = $Forename.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
             Write-Host "`t- Indtast Efternavn:" -nonewline -f yellow;
-            $Lastname = Read-Host " "
+            $Lastname = Read-Host
             $Lastname = $Lastname.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
         # COMPUTER NAVN
             $PCName = "PC-"+$Forename.Substring(0,3).ToUpper()+$Lastname.Substring(0,3).ToUpper()
