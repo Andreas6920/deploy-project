@@ -13,6 +13,7 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:MM:ss")}
 
 # Opgrader TLS
+$ProgressPreference = "SilentlyContinue"
 Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green
 [System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
 Do{sleep 15}until((Test-Connection github.com -Quiet) -eq $true)
