@@ -18,14 +18,9 @@ Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green
 
 # Set DNS to cloudflare for optimized performance
 if($env:USERDNSDOMAIN -eq $null){
-Write-Host "[$(Get-LogDate)]`t- Indstiller DNS." -ForegroundColor Green
-Start-Sleep -S 1
-$nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
-$ProgressPreference = "SilentlyContinue"
-Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | out-null
-Start-Sleep -S 1
-}
-
+    $job = Start-Job -ScriptBlock {
+    $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
+    Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null}}
 
 # Rename PC
     # Klargøring
@@ -73,5 +68,5 @@ Start-Sleep -S 1
 
     # Restart-PC
         Write-Host "[$(Get-LogDate)]`t- Genstarter PC." -ForegroundColor Green
-        Start-Sleep -Seconds 10
+        Wait-Job -Id $job.Id
         Restart-Computer -Force
