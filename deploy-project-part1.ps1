@@ -52,11 +52,11 @@ Start-Sleep -S 1
             Write-Host "`t`t- COMPUTERNAVN:`t`t$PCName" -f Yellow;
             if($PCName -ne $env:COMPUTERNAME){Rename-computer -newname $PCName}
         # Omdøb PC Beskrivelse
+            $WarningPreference = "SilentlyContinue"
             Write-Host "`t`t- BESKRIVELSE:`t`t$PCDescription" -f Yellow;
             $ThisPCDescription = Get-WmiObject -class Win32_OperatingSystem
             $ThisPCDescription.Description = $PCDescription
             $ThisPCDescription.put() | out-null
-            $WarningPreference = "Continue"
             Write-Host "[$(Get-LogDate)]`t- Computeren navngives ved genstart." -ForegroundColor Green
 
  # Prepare script after reboot
