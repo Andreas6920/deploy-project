@@ -21,8 +21,10 @@ if($env:USERDNSDOMAIN -eq $null){
 Write-Host "[$(Get-LogDate)]`t- Indstiller DNS." -ForegroundColor Green
 Start-Sleep -S 1
 $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
+$ProgressPreference = "SilentlyContinue"
 Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | out-null
-Start-Sleep -S 1}
+Start-Sleep -S 1
+}
 
 
 # Rename PC
