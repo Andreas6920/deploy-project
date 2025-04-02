@@ -1,13 +1,13 @@
-# Start
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-
-#reinsure admin rights
+# Reinsure admin rights
 If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
 {
     # Relaunch as an elevated process
     $Script = $MyInvocation.MyCommand.Path
     Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy RemoteSigned", "-File `"$Script`""
 }
+
+# Start
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 # Funktion til at få det aktuelle tidspunkt
 function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
@@ -67,7 +67,7 @@ function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
 # Install Endpoint Protection
 
 # Action1
-    irm "https://raw.githubusercontent.com/Andreas6920/Other/main/scripts/action.ps1" | iex
+    irm "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/ActionOne.ps1" | iex
 
 
 # Remove Scheduled task

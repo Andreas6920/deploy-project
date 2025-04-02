@@ -1,13 +1,13 @@
-# Start
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
-
-#reinsure admin rights
+# Reinsure admin rights
 If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
 {
     # Relaunch as an elevated process
     $Script = $MyInvocation.MyCommand.Path
     Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy RemoteSigned", "-File `"$Script`""
 }
+
+# Start
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 # Funktion til at få det aktuelle tidspunkt
 function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
