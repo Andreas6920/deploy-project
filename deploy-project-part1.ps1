@@ -7,20 +7,25 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 
 # Start
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 # Funktion til at få det aktuelle tidspunkt
-function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
+    function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
+
+# Wait for internet
+    Write-Host "[$(Get-LogDate)]`t- Venter på internet" -ForegroundColor Green -NoNewline
+    do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
+    Write-host " [VERIFICERET]" -ForegroundColor Green
 
 # Opgrader TLS
-Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green
-[System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
+    Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green
+    [System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
 
 # Set DNS to cloudflare for optimized performance
-if($env:USERDNSDOMAIN -eq $null){
-    $job = Start-Job -ScriptBlock {
-    $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
-    Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null}}
+    if($env:USERDNSDOMAIN -eq $null){
+        $job = Start-Job -ScriptBlock {
+        $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
+        Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null}}
 
 # Rename PC
     # Klargøring
