@@ -105,12 +105,12 @@
 
     Start-Input
 
-<# Message
-    Add-Type -AssemblyName System.Windows.Forms | Out-Null
-    [System.Windows.Forms.Application]::EnableVisualStyles()
-    $btn = [System.Windows.Forms.MessageBoxButtons]::OK
-    $ico = [System.Windows.Forms.MessageBoxIcon]::Information
-    $Title = 'Microsoft Windows Deployment'
-    $Message = 'Deployment complete!'
-    $Return = [System.Windows.Forms.MessageBox]::Show($Message, $Title, $btn, $ico)
-#>
+Add-Type -AssemblyName System.Windows.Forms
+$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
+$path = (Get-Process -id $pid).Path
+$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+$balmsg.BalloonTipText = "Deployment scriptet er nu fuldendt."
+$balmsg.BalloonTipTitle = "Deployment Script"
+$balmsg.Visible = $true
+$balmsg.ShowBalloonTip(20000)
