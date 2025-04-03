@@ -24,7 +24,7 @@
     Install-App -Name "Office, Chrome, 7zip, VLC" -EnableAutoupdate
     
     Write-Host "$(Get-LogDate)`t    Activating Office" -f Green
-    start-sleep -s 30; & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
+    & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
 
 # Install printer
     irm https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1 | IEX
