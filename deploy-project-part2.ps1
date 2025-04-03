@@ -52,7 +52,60 @@
     Write-Host "$(Get-LogDate)`t    Rydder op." -ForegroundColor Green
     Unregister-ScheduledTask -TaskName "post-reboot-setup" -Confirm:$false
 
-# Message
+# Setup Desktop icons
+    Write-Host "$(Get-LogDate)`t    Indstiller skrivebordsikoner" -ForegroundColor Green
+    $desktop = [Environment]::GetFolderPath("Desktop") 
+    Get-ChildItem $desktop | % {Remove-Item $_.FullName; Start-Sleep -S 1}
+    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk" -Destination $desktop
+    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook (classic).lnk" -Destination $desktop
+        $path = Join-path $desktop -ChildPath "Outlook (classic).lnk"
+        Rename-Item -Path $path -NewName "Outlook.lnk"
+    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Word.lnk" -Destination $desktop
+    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk" -Destination $desktop
+
+# Pin icons to taskbar
+
+    Write-Host "$(Get-LogDate)`t    Indstiller taskbar pins" -ForegroundColor Green
+    
+    Stop-Input
+    sleep -s 2
+    $app = New-Object -ComObject Shell.Application
+    $key = New-Object -com Wscript.Shell    
+        
+    $app.open("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\")
+    sleep -s 1
+    $key.SendKeys("{DOWN}")
+    sleep -s 1
+    $key.SendKeys("Google")
+    sleep -s 1
+    $key.SendKeys("+{F10}")
+    sleep -s 1
+    $key.SendKeys("k")
+    sleep -s 1
+    $key.SendKeys("Outlook")
+    sleep -s 1
+    $key.SendKeys("+{F10}")
+    sleep -s 1
+    $key.SendKeys("k")
+    sleep -s 1
+    $key.SendKeys("word")
+    sleep -s 1
+    $key.SendKeys("+{F10}")
+    sleep -s 1
+    $key.SendKeys("k")
+    sleep -s 1
+    $key.SendKeys("excel")
+    sleep -s 1
+    $key.SendKeys("+{F10}")
+    sleep -s 1
+    $key.SendKeys("k")
+    sleep -s 1
+    $key.SendKeys("%{F4}")
+    sleep -s 2
+
+    Start-Input
+
+<# Message
     Add-Type -AssemblyName System.Windows.Forms | Out-Null
     [System.Windows.Forms.Application]::EnableVisualStyles()
     $btn = [System.Windows.Forms.MessageBoxButtons]::OK
@@ -60,3 +113,4 @@
     $Title = 'Microsoft Windows Deployment'
     $Message = 'Deployment complete!'
     $Return = [System.Windows.Forms.MessageBox]::Show($Message, $Title, $btn, $ico)
+#>
