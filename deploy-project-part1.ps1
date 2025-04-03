@@ -9,19 +9,22 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # Start
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
-# Funktion til at få det aktuelle tidspunkt
-    function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
+# Timestamps for actions
+    Function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
+
+Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
 
 # Wait for internet
-    Write-Host "[$(Get-LogDate)]`t- Venter på internet" -ForegroundColor Green -NoNewline
+    Write-Host "$(Get-LogDate)`t    Venter på internet" -ForegroundColor Green -NoNewline
     do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
     Write-host " [VERIFICERET]" -ForegroundColor Green
 
 # Opgrader TLS
-    Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t    Opgradere TLS." -ForegroundColor Green
     [System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
 
 # Set DNS to cloudflare for optimized performance
+    Write-Host "$(Get-LogDate)`t    Opsætter DNS til Cloudflare." -ForegroundColor Green
     if($env:USERDNSDOMAIN -eq $null){
         $job = Start-Job -ScriptBlock {
         $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
@@ -29,7 +32,7 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 # Rename PC
     # Klargøring
-        Write-Host "[$(Get-LogDate)]`t- Navngiver PC." -ForegroundColor Green
+        Write-Host "$(Get-LogDate)`t    Navngiver PC." -ForegroundColor Green
         # Modtager brugertastning
             Write-Host "`t- Indtast Fornavn: " -nonewline -f yellow;
             $Forename = Read-Host
@@ -57,13 +60,14 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
             $ThisPCDescription = Get-WmiObject -class Win32_OperatingSystem
             $ThisPCDescription.Description = $PCDescription
             $ThisPCDescription.put() | out-null
-            Write-Host "[$(Get-LogDate)]`t- Computeren navngives ved genstart." -ForegroundColor Green
+            Write-Host "$(Get-LogDate)`t    Computeren navngives ved genstart." -ForegroundColor Green
 
  # Prepare script after reboot
-        Write-Host "[$(Get-LogDate)]`t- Forbereder genstart." -ForegroundColor Green
+        Write-Host "$(Get-LogDate)`t    Forbereder genstart." -ForegroundColor Green
         $url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/deploy-project-part2.ps1"
         $path = 'C:\ProgramData\post-reboot-setup.ps1'
         irm -uri $url -OutFile $path
+        
         #Setting to start after reboot
         $name = 'post-reboot-setup'
         $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ep bypass -file $path"
@@ -72,6 +76,6 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
         Register-ScheduledTask -TaskName $Name  -Principal $principal -Action $action -Trigger $trigger -Force | Out-Null 
 
 # Restart-PC
-    Write-Host "[$(Get-LogDate)]`t- Genstarter PC.." -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t    Genstarter PC." -ForegroundColor Green
     Wait-Job -Id $job.Id | Out-Null
     Restart-Computer -Force
