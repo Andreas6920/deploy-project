@@ -6,7 +6,7 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy RemoteSigned", "-File `"$Script`""
 }
 
-# Start
+# Bypass ExecutionPolicy
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 # Timestamps for actions
@@ -62,18 +62,21 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
             $ThisPCDescription.put() | out-null
             Write-Host "$(Get-LogDate)`t    Computeren navngives ved genstart." -ForegroundColor Green
 
- # Prepare script after reboot
-        Write-Host "$(Get-LogDate)`t    Forbereder genstart." -ForegroundColor Green
-        $url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/deploy-project-part2.ps1"
-        $path = 'C:\ProgramData\post-reboot-setup.ps1'
-        irm -uri $url -OutFile $path
-        
-        #Setting to start after reboot
-        $name = 'post-reboot-setup'
-        $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ep bypass -file $path"
-        $principal = New-ScheduledTaskPrincipal -UserId $env:username -LogonType ServiceAccount -RunLevel Highest
-        $trigger = New-ScheduledTaskTrigger -AtLogOn
-        Register-ScheduledTask -TaskName $Name  -Principal $principal -Action $action -Trigger $trigger -Force | Out-Null 
+# Prepare script after reboot
+    # Dowloading Part 2
+    Write-Host "$(Get-LogDate)`t    Forbereder genstart." -ForegroundColor Green
+    $url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/deploy-project-part2.ps1"
+    $path = 'C:\ProgramData\post-reboot-setup.ps1'
+    irm -uri $url -OutFile $path
+    Start-Sleep -S 3
+    
+    # Setting to start after reboot
+    $name = 'post-reboot-setup'
+    $action = New-ScheduledTaskAction -Execute "PowerShell.exe" -WindowStyle Maximized -Argument "-ep bypass -file $path"
+    $principal = New-ScheduledTaskPrincipal -UserId $env:username -LogonType ServiceAccount -RunLevel Highest
+    $trigger = New-ScheduledTaskTrigger -AtLogOn
+    Register-ScheduledTask -TaskName $Name  -Principal $principal -Action $action -Trigger $trigger -Force | Out-Null 
+    Start-Sleep -S 3
 
 # Restart-PC
     Write-Host "$(Get-LogDate)`t    Genstarter PC." -ForegroundColor Green

@@ -13,7 +13,7 @@
     function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
 
 # Wait for internet
-    Write-Host "[$(Get-LogDate)]`t- Venter på internet" -ForegroundColor Green -NoNewline
+    Write-Host "$(Get-LogDate)`t    Venter på internet" -ForegroundColor Green -NoNewline
     do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
     Write-host " [VERIFICERET]" -ForegroundColor Green
 
@@ -35,20 +35,21 @@
 # Action1
     
     # Download
-    Write-Host "[$(Get-LogDate)]`t- Action1 Installation" -ForegroundColor Green
-    Write-Host "$(Get-LogDate)`t        - Henter ned" -ForegroundColor Yellow
+    Write-Host "$(Get-LogDate)`t    Action1 installation:" -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t        - Downloader" -ForegroundColor Yellow
     $link = "https://app.eu.action1.com/agent/51fced32-7e39-11ee-b2da-3151362a23c3/Windows/agent(My_Organization).msi"
     $path = join-path -Path $env:TMP -ChildPath (split-path $link -Leaf)
     (New-Object net.webclient).Downloadfile("$link", "$path") | Out-Null
     
     # Install
-    Write-Host "$(Get-LogDate)`t        - Opsætter" -ForegroundColor Yellow -NoNewline
+    Write-Host "$(Get-LogDate)`t        - Installere" -ForegroundColor Yellow
     msiexec /i $path /quiet
     
     # Confirming installation
     do{Start-Sleep -S 1; Write-Host "." -NoNewline -ForegroundColor Yellow}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
 
 # Remove Scheduled task
+    Write-Host "$(Get-LogDate)`t    Rydder op." -ForegroundColor Green
     Unregister-ScheduledTask -TaskName "post-reboot-setup" -Confirm:$false
 
 # Message
