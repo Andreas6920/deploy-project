@@ -81,7 +81,8 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
     $taskAction = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-w Maximized -ExecutionPolicy Bypass -File `"$ScriptLocation`""
     $taskTrigger = New-ScheduledTaskTrigger -AtLogon  
     $taskPrincipal = New-ScheduledTaskPrincipal -UserId $CurrentUser -LogonType Interactive -RunLevel Highest
-    Register-ScheduledTask -TaskName $ScriptName -Description $Description -Action $taskAction -Trigger $taskTrigger -Principal $taskPrincipal
+    $taskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -DontStopOnIdleEnd
+    Register-ScheduledTask -TaskName $ScriptName -Description $Description -Action $taskAction -Trigger $taskTrigger -Principal $taskPrincipal -Settings $taskSettings | Out-Null
     Write-Host "$(Get-LogDate)`t        - Scheduled task '$ScriptName' created successfully." -ForegroundColor Yellow
 
 # Restart-PC
