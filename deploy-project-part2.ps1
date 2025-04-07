@@ -2,7 +2,7 @@
     Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
 # Funktion til at få det aktuelle tidspunkt
-    function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
+    function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
 
 # Wait for internet
     Write-Host "$(Get-LogDate)`t    Afventer internet forbindelse" -ForegroundColor Green -NoNewline
