@@ -12,7 +12,7 @@
 # Configure Windows
     irm https://git.io/JzrB5 | IEX; 
     Start-WinAntiBloat
-    Start-WinOptimizer
+    Start-WinSettings
     Start-WinSecurity
     Install-App -Name "Office, Chrome, 7zip, VLC" -EnableAutoupdate
 
