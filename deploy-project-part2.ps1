@@ -1,83 +1,116 @@
-# Reinsure admin rights
-If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
-{
-    # Relaunch as an elevated process
-    $Script = $MyInvocation.MyCommand.Path
-    Start-Process powershell.exe -Verb RunAs -ArgumentList "-ExecutionPolicy RemoteSigned", "-File `"$Script`""
-}
-
 # Start
-Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
-# Timestamps for actions
-Function Get-LogDate {
-            return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
+# Funktion til at få det aktuelle tidspunkt
+    function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
+
+# Wait for internet
+    Write-Host "$(Get-LogDate)`t    Venter på internet" -ForegroundColor Green -NoNewline
+    do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
+    Write-host " [VERIFICERET]" -ForegroundColor Green
 
 # Configure Windows
-    Write-Host "[$(Get-LogDate)]`t- Opsætter Windows:" -ForegroundColor Green
-    $url = "https://git.io/JzrB5"
-    
-    irm $url | iex
-
+    irm https://git.io/JzrB5 | IEX; 
     Start-WinAntiBloat
     Start-WinOptimizer
     Start-WinSecurity
-    Install-App -Name "Office, Chrome,7zip,VLC" -MicrosoftOffice2016Retail -EnableAutoupdate
+    Install-App -Name "Office, Chrome, 7zip, VLC" -EnableAutoupdate
+
+# Activation 
+    Write-Host "$(Get-LogDate)`t    Activation:" -f Green
+
+    Write-Host "$(Get-LogDate)`t        - Office" -ForegroundColor Yellow
+    & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
+
+    Write-Host "$(Get-LogDate)`t        - Windows" -ForegroundColor Yellow
+    & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID
 
 
 # Install printer
-
-    $url = "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1"
-    $path = Join-Path -Path $env:TMP -ChildPath "Printer-Installation.ps1"
-    irm $url -OutFile $path
-    Import-Module $path
-
+    irm https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1 | IEX
     Install-Printer -All -NavisionPrinter
-
-# Install Applications
-
-    # Install Chocolatey
-    $url = "https://community.chocolatey.org/install.ps1"
-    $path = Join-Path -Path $env:TMP -ChildPath "ChocolateyInstall.ps1"
-    $logpath = Join-Path -Path $env:TMP -ChildPath "ChocolateyLogs.txt"
-    Write-Host "[$(Get-LogDate)]`t- Preparing Application Installation." -ForegroundColor Green
-    irm $url -OutFile $path
-    . $path | Out-Null
-
-    ## Install applications with chocolatey
-    Write-Host "[$(Get-LogDate)]`t- Installing Applications:" -ForegroundColor Green
-    Write-Host "[$(Get-LogDate)]`t`t- Removing office bloat" -ForegroundColor Yellow
-        $ProgressPreference = "SilentlyContinue" # hide progressbar
-        "Microsoft.MicrosoftOfficeHub", "Microsoft.Office.OneNote" | ForEach-Object {
-        if (Get-AppxPackage | Where-Object Name -Like $_) {
-            Get-AppxPackage | Where-Object Name -Like $_ | Remove-AppxPackage; Start-Sleep -Seconds 5}}
-    Write-Host "[$(Get-LogDate)]`t`t- Installing office (This step may take a while...)" -ForegroundColor Yellow
-    choco install microsoft-office-deployment --params="'/Product:ProfessionalRetail /64bit /ProofingToolLanguage:da-dk,en-us'" -y --log-file=$logpath | Out-Null
-    Write-Host "[$(Get-LogDate)]`t`t- Installing Chrome" -ForegroundColor Yellow
-    choco install googlechrome --ignore-checksums -y --log-file=$logpath | Out-Null
-    Write-Host "[$(Get-LogDate)]`t`t- Installing VLC" -ForegroundColor Yellow
-    choco install vlc -y --log-file=$logpath | Out-Null
-    Write-Host "[$(Get-LogDate)]`t`t- Installing 7-zip" -ForegroundColor Yellow
-    choco install 7zip.install -y --log-file=$logpath | Out-Null
-    $ProgressPreference = "Continue" #unhide progressbar
-    Write-Host "[$(Get-LogDate)]`t`t- Activating Office" -ForegroundColor Yellow
-    start-sleep -s 30; & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
-    Write-Host "[$(Get-LogDate)]`t`t- Activating Windows" -ForegroundColor Yellow
-    start-sleep -s 10; & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID
 
 # Install Endpoint Protection
 
 # Action1
-    irm "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/ActionOne.ps1" | iex
+    
+    # Download
+    Write-Host "$(Get-LogDate)`t    Action1 installation:" -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t        - Downloader" -ForegroundColor Yellow
+    $link = "https://app.eu.action1.com/agent/51fced32-7e39-11ee-b2da-3151362a23c3/Windows/agent(My_Organization).msi"
+    $path = join-path -Path $env:TMP -ChildPath (split-path $link -Leaf)
+    (New-Object net.webclient).Downloadfile("$link", "$path") | Out-Null
+    
+    # Install
+    Write-Host "$(Get-LogDate)`t        - Installere" -ForegroundColor Yellow
+    msiexec /i $path /quiet
+    
+    # Confirming installation
+    do{Start-Sleep -S 1; Write-Host "." -NoNewline -ForegroundColor Yellow}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
 
 # Remove Scheduled task
+    Write-Host "$(Get-LogDate)`t    Rydder op." -ForegroundColor Green
     Unregister-ScheduledTask -TaskName "post-reboot-setup" -Confirm:$false
 
-# Message
-    Add-Type -AssemblyName System.Windows.Forms | Out-Null
-    [System.Windows.Forms.Application]::EnableVisualStyles()
-    $btn = [System.Windows.Forms.MessageBoxButtons]::OK
-    $ico = [System.Windows.Forms.MessageBoxIcon]::Information
-    $Title = 'Microsoft Windows Deployment'
-    $Message = 'Deployment complete!'
-    $Return = [System.Windows.Forms.MessageBox]::Show($Message, $Title, $btn, $ico)
+# Setup Desktop icons
+    Write-Host "$(Get-LogDate)`t    Indstiller skrivebordsikoner" -ForegroundColor Green
+    $desktop = [Environment]::GetFolderPath("Desktop") 
+    Get-ChildItem $desktop | % {Remove-Item $_.FullName; Start-Sleep -S 1}
+    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk" -Destination $desktop
+    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook (classic).lnk" -Destination $desktop
+        $path = Join-path $desktop -ChildPath "Outlook (classic).lnk"
+        Rename-Item -Path $path -NewName "Outlook.lnk"
+    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Word.lnk" -Destination $desktop
+    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk" -Destination $desktop
+
+# Pin icons to taskbar
+
+    Write-Host "$(Get-LogDate)`t    Indstiller taskbar pins" -ForegroundColor Green
+    
+    Stop-Input
+    sleep -s 2
+    $app = New-Object -ComObject Shell.Application
+    $key = New-Object -com Wscript.Shell    
+        
+    $app.open("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\")
+    sleep -s 1
+    $key.SendKeys("{DOWN}")
+    sleep -s 1
+    $key.SendKeys("Google")
+    sleep -s 1
+    $key.SendKeys("+{F10}")
+    sleep -s 1
+    $key.SendKeys("k")
+    sleep -s 1
+    $key.SendKeys("Outlook")
+    sleep -s 1
+    $key.SendKeys("+{F10}")
+    sleep -s 1
+    $key.SendKeys("k")
+    sleep -s 1
+    $key.SendKeys("word")
+    sleep -s 1
+    $key.SendKeys("+{F10}")
+    sleep -s 1
+    $key.SendKeys("k")
+    sleep -s 1
+    $key.SendKeys("excel")
+    sleep -s 1
+    $key.SendKeys("+{F10}")
+    sleep -s 1
+    $key.SendKeys("k")
+    sleep -s 1
+    $key.SendKeys("%{F4}")
+    sleep -s 2
+
+    Start-Input
+
+Add-Type -AssemblyName System.Windows.Forms
+$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
+$path = (Get-Process -id $pid).Path
+$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
+$balmsg.BalloonTipText = "Deployment scriptet er nu fuldendt."
+$balmsg.BalloonTipTitle = "Deployment Script"
+$balmsg.Visible = $true
+$balmsg.ShowBalloonTip(20000)
