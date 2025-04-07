@@ -22,7 +22,7 @@ Function Get-LogDate {
 
     Start-WinAntiBloat
     Start-WinSecurity
-    Install-App -Name "Chrome,7zip,VLC" -MicrosoftOffice2016Retail -EnableAutoupdate
+    Install-App -Name "Office, Chrome,7zip,VLC" -MicrosoftOffice2016Retail -EnableAutoupdate
 
 
 # Install printer
