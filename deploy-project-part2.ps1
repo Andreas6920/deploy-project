@@ -16,11 +16,11 @@ Function Get-LogDate {
 # Configure Windows
     Write-Host "[$(Get-LogDate)]`t- Opsætter Windows:" -ForegroundColor Green
     $url = "https://git.io/JzrB5"
-    $path = Join-Path -Path $env:TMP -ChildPath "Winoptimizer.ps1"
-    irm $url -OutFile $path
-    Import-Module $path
+    
+    irm $url | iex
 
     Start-WinAntiBloat
+    Start-WinOptimizer
     Start-WinSecurity
     Install-App -Name "Office, Chrome,7zip,VLC" -MicrosoftOffice2016Retail -EnableAutoupdate
 
