@@ -9,8 +9,10 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # Start
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
-# Funktion til at få det aktuelle tidspunkt
-function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
+
+# Timestamps for actions
+Function Get-LogDate {
+            return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
 
 # Opgrader TLS
 Write-Host "[$(Get-LogDate)]`t- Opgradere forbindelse." -ForegroundColor Green

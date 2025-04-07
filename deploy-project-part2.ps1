@@ -9,8 +9,9 @@ If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # Start
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 
-# Funktion til at få det aktuelle tidspunkt
-function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
+# Timestamps for actions
+Function Get-LogDate {
+            return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
 
 # Configure Windows
     Write-Host "[$(Get-LogDate)]`t- Opsætter Windows:" -ForegroundColor Green
@@ -19,10 +20,10 @@ function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
     irm $url -OutFile $path
     Import-Module $path
 
-    Write-Host "[$(Get-LogDate)]`t`t- Renser windows" -ForegroundColor Yellow
     Start-WinAntiBloat
-    Write-Host "[$(Get-LogDate)]`t`t- Styrker windows" -ForegroundColor Yellow
     Start-WinSecurity
+    Install-App -Name "Chrome,7zip,VLC" -MicrosoftOffice2016Retail -EnableAutoupdate
+
 
 # Install printer
 
@@ -69,8 +70,8 @@ function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
 # Action1
     irm "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/ActionOne.ps1" | iex
 
-
 # Remove Scheduled task
+    Unregister-ScheduledTask -TaskName "post-reboot-setup" -Confirm:$false
 
 # Message
     Add-Type -AssemblyName System.Windows.Forms | Out-Null
