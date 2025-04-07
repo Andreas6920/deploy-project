@@ -63,10 +63,14 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
 
 # Prepare script after reboot
     Write-Host "$(Get-LogDate)`t    Forbereder genstart:" -ForegroundColor Green
-    $ScriptURL = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/deploy-project-part2.ps1"
-    $ScriptName = [System.IO.Path]::GetFileName((Split-Path $ScriptURL -Leaf))
-    $ScriptLocation = "C:\$ScriptName"
-    $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+    
+    # Starter
+    $ScriptUrl = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/deploy-project-part2.ps1"
+    $ScriptName = [System.IO.Path]::GetFileNameWithoutExtension((Split-Path $ScriptUrl -Leaf))
+    $ScriptFolder = $env:HOMEDRIVE
+    $ScriptLocation = Join-Path -Path $Scriptfolder -ChildPath (Split-Path $ScriptUrl -Leaf)
+    $CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+    $Description = "PC deployment script, part 2"
 
     # Download filen til C:\ via Invoke-RestMethod
     try {Invoke-RestMethod -Uri $ScriptURL -OutFile $ScriptLocation
@@ -74,12 +78,14 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
     catch { Write-Host "$(Get-LogDate)`t        - FAILED to download script: $_" -ForegroundColor Red}
 
     # Task Action - Løber lokalt script med PowerShell i fuld skærm
-    $taskAction = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-w Maximized -File `"$ScriptLocation`""
+    $taskAction = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-w Maximized -ExecutionPolicy Bypass -File `"$ScriptLocation`""
     $taskTrigger = New-ScheduledTaskTrigger -AtLogon  
-    $taskPrincipal = New-ScheduledTaskPrincipal -UserId $currentUser -LogonType Interactive -RunLevel Highest
-    Register-ScheduledTask -TaskName $ScriptName -Description "PC deployment script, part 2" -Action $taskAction -Trigger $taskTrigger -Principal $taskPrincipal
+    $taskPrincipal = New-ScheduledTaskPrincipal -UserId $CurrentUser -LogonType Interactive -RunLevel Highest
+    Register-ScheduledTask -TaskName $ScriptName -Description $Description -Action $taskAction -Trigger $taskTrigger -Principal $taskPrincipal
     Write-Host "$(Get-LogDate)`t        - Scheduled task '$ScriptName' created successfully." -ForegroundColor Yellow
 
 # Restart-PC
+    Start-Sleep -S 3
     Write-Host "$(Get-LogDate)`t    Genstarter PC." -ForegroundColor Green
+    Start-Sleep -S 5
     Restart-Computer -Force

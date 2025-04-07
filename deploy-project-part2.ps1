@@ -5,7 +5,7 @@
     function Get-LogDate {return (Get-Date -f "yyyy/MM/dd HH:mm:ss")}
 
 # Wait for internet
-    Write-Host "$(Get-LogDate)`t    Venter på internet" -ForegroundColor Green -NoNewline
+    Write-Host "$(Get-LogDate)`t    Afventer internet forbindelse" -ForegroundColor Green -NoNewline
     do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
     Write-host " [VERIFICERET]" -ForegroundColor Green
 
