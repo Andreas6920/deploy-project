@@ -54,14 +54,29 @@
 
 # Setup Desktop icons
     Write-Host "$(Get-LogDate)`t    Indstiller skrivebordsikoner" -ForegroundColor Green
-    $desktop = [Environment]::GetFolderPath("Desktop") 
-    Get-ChildItem $desktop | % {Remove-Item $_.FullName; Start-Sleep -S 1}
-    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk" -Destination $desktop
-    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook (classic).lnk" -Destination $desktop
-        $path = Join-path $desktop -ChildPath "Outlook (classic).lnk"
-        Rename-Item -Path $path -NewName "Outlook.lnk"
-    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Word.lnk" -Destination $desktop
-    Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk" -Destination $desktop
+
+    # Fjerner gamle ikoner
+        $Desktops = @(
+        "$env:USERPROFILE\Desktop",
+        "C:\Users\Public\Desktop") + (Get-ChildItem "C:\Users" -Directory).FullName | ForEach-Object { "$_\Desktop" }
+        foreach ($Path in $Desktops) {
+            if (Test-Path $Path) {
+                Get-ChildItem -Path $Path -Filter *.lnk -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+                    Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue
+                    Write-Host "Removed: $($_.FullName)" -ForegroundColor Green}}
+            
+                Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk" -Destination $Path
+                Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook (classic).lnk" -Destination $Path
+                    $OutlookShortcut = Join-path $Path -ChildPath "Outlook (classic).lnk"
+                    Rename-Item -Path $OutlookShortcut -NewName "Outlook.lnk"
+                Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Word.lnk" -Destination $Path
+                Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk" -Destination $Path  
+                
+                
+                }
+
+    # Indsæt nye ikoner
+    
 
 # Pin icons to taskbar
 
