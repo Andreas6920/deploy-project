@@ -10,7 +10,7 @@
     Write-host " [VERIFICERET]" -ForegroundColor Green
 
 # Configure Windows
-    irm https://git.io/JzrB5 | IEX; 
+    Invoke-RestMethod "https://git.io/JzrB5" | Invoke-Expression; 
     Start-WinAntiBloat
     Start-WinSettings
     Start-WinSecurity
