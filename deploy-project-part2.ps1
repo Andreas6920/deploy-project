@@ -5,9 +5,15 @@
     function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
 
 # Wait for internet
-    Write-Host "$(Get-LogDate)`t    Afventer internet forbindelse" -ForegroundColor Green -NoNewline
+    Write-Host "$(Get-LogDate)`t    Awaiting internet connectivity" -ForegroundColor Green -NoNewline
     do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
-    Write-host " [VERIFICERET]" -ForegroundColor Green
+    Write-host " [GRANTED]" -ForegroundColor Green
+
+# Install printer
+Write-Host "$(Get-LogDate)`t    Setting up printers as background job..." -ForegroundColor Green
+$PrinterInstallationJob = Start-Job -ScriptBlock {
+    Invoke-RestMethod https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1 | Invoke-Expression
+    Install-Printer -All -NavisionPrinter}
 
 # Configure Windows
     Invoke-RestMethod "https://git.io/JzrB5" | Invoke-Expression; 
@@ -16,21 +22,20 @@
     Start-WinSecurity
     Install-App -Name "Office, Chrome, 7zip, VLC" -EnableAutoupdate
 
-# Activation 
-    Write-Host "$(Get-LogDate)`t    Activation:" -f Green
+# Activation as background job
+        Write-Host "$(Get-LogDate)`t    Activates as background job..." -ForegroundColor Green
 
-    Write-Host "$(Get-LogDate)`t        - Office" -ForegroundColor Yellow
-    & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
-
-    Write-Host "$(Get-LogDate)`t        - Windows" -ForegroundColor Yellow
-    & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID
-
-
-# Install printer
-    irm https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1 | IEX
-    Install-Printer -All -NavisionPrinter
+        $activationJob = Start-Job -ScriptBlock {
+            #Office
+            & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
+            
+            Start-Sleep -S 10
+            
+            # Windows
+            & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID}
 
 # Install Endpoint Protection
+    # Placeholder
 
 # Action1
     
@@ -50,7 +55,7 @@
 
 # Remove Scheduled task
     Write-Host "$(Get-LogDate)`t    Rydder op." -ForegroundColor Green
-    Unregister-ScheduledTask -TaskName "post-reboot-setup" -Confirm:$false
+    Unregister-ScheduledTask -TaskName "deploy-project-part2" -Confirm:$false
 
 # Setup Desktop icons
     Write-Host "$(Get-LogDate)`t    Indstiller skrivebordsikoner" -ForegroundColor Green
@@ -119,6 +124,15 @@
     sleep -s 2
 
     Start-Input
+
+
+# Vent på at aktivering er færdig
+    Write-Host "$(Get-LogDate)`t    Afventer afslutning af aktivering..." -ForegroundColor Green
+    Wait-Job $activationJob | Out-Null
+    Receive-Job $activationJob | Out-Null
+    Remove-Job $activationJob | Out-Null
+    Write-Host "$(Get-LogDate)`t        - Aktivering fuldført." -ForegroundColor Green
+
 
 Add-Type -AssemblyName System.Windows.Forms
 $global:balmsg = New-Object System.Windows.Forms.NotifyIcon
