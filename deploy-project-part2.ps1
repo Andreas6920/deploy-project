@@ -10,11 +10,11 @@
     Write-host " [GRANTED]" -ForegroundColor Green
 
 # Install printer
-    Invoke-RestMethod https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1 | Invoke-Expression
+    Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
     Install-Printer -All -NavisionPrinter
 
 # Configure Windows
-    Invoke-RestMethod "https://git.io/JzrB5" | Invoke-Expression; 
+    Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/WinOptimizer/main/Winoptimizer.ps1" | Invoke-Expression
     Start-WinAntiBloat
     Start-WinSettings
     Start-WinSecurity
