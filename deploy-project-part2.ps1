@@ -80,7 +80,7 @@
 
     # Indsæt nye ikoner
     
-
+<#
 # Pin icons to taskbar
 
     Write-Host "$(Get-LogDate)`t    Indstiller taskbar pins" -ForegroundColor Green
@@ -122,7 +122,7 @@
     sleep -s 2
 
     Start-Input
-
+#>
 
 # Vent på at aktivering er færdig
     Write-Host "$(Get-LogDate)`t    Afventer afslutning af aktivering..." -ForegroundColor Green
