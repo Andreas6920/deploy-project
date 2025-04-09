@@ -10,10 +10,8 @@
     Write-host " [GRANTED]" -ForegroundColor Green
 
 # Install printer
-Write-Host "$(Get-LogDate)`t    Setting up printers as background job..." -ForegroundColor Green
-$PrinterInstallationJob = Start-Job -ScriptBlock {
     Invoke-RestMethod https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1 | Invoke-Expression
-    Install-Printer -All -NavisionPrinter}
+    Install-Printer -All -NavisionPrinter
 
 # Configure Windows
     Invoke-RestMethod "https://git.io/JzrB5" | Invoke-Expression; 
