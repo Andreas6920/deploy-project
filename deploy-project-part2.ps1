@@ -10,6 +10,7 @@
     Write-host " [GRANTED]" -ForegroundColor Green
 
 # Install printer
+    Write-Host "$(Get-LogDate)`t    Installing printers." -ForegroundColor Green
     Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
     Install-Printer -All -NavisionPrinter
 
@@ -21,7 +22,7 @@
     Install-App -Name "Office, Chrome, 7zip, VLC" -EnableAutoupdate
 
 # Activation as background job
-        Write-Host "$(Get-LogDate)`t    Activates as background job..." -ForegroundColor Green
+        Write-Host "$(Get-LogDate)`t    Activation in the background.." -ForegroundColor Green
 
         $activationJob = Start-Job -ScriptBlock {
             #Office
@@ -32,31 +33,34 @@
             # Windows
             & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID}
 
+            Wait-Job -Name $activationJob
 # Install Endpoint Protection
     # Placeholder
 
 # Action1
     
     # Download
-    Write-Host "$(Get-LogDate)`t    Action1 installation:" -ForegroundColor Green
-    Write-Host "$(Get-LogDate)`t        - Downloader" -ForegroundColor Yellow
+    Write-Host "$(Get-LogDate)`t    Installing Action1.." -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t        - Downloading." -ForegroundColor Yellow
     $link = "https://app.eu.action1.com/agent/51fced32-7e39-11ee-b2da-3151362a23c3/Windows/agent(My_Organization).msi"
     $path = join-path -Path $env:TMP -ChildPath (split-path $link -Leaf)
     (New-Object net.webclient).Downloadfile("$link", "$path") | Out-Null
     
     # Install
-    Write-Host "$(Get-LogDate)`t        - Installere" -ForegroundColor Yellow
+    Write-Host "$(Get-LogDate)`t        - Installing." -ForegroundColor Yellow
     msiexec /i $path /quiet
     
     # Confirming installation
+    Write-Host "$(Get-LogDate)`t        - Awaiting agent to confirmed running." -ForegroundColor Yellow
     do{Start-Sleep -S 1; Write-Host "." -NoNewline -ForegroundColor Yellow}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
+    Write-Host "$(Get-LogDate)`t        - Complete." -ForegroundColor Yellow
 
 # Remove Scheduled task
-    Write-Host "$(Get-LogDate)`t    Rydder op." -ForegroundColor Green
-    Unregister-ScheduledTask -TaskName "deploy-project-part2" -Confirm:$false
+    Write-Host "$(Get-LogDate)`t    Cleaning up shceduled task." -ForegroundColor Green
+    Unregister-ScheduledTask -TaskName "deploy-project-part2" -Confirm:$false | Out-Null
 
 # Setup Desktop icons
-    Write-Host "$(Get-LogDate)`t    Indstiller skrivebordsikoner" -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t    Setting desktop icons" -ForegroundColor Green
 
     # Fjerner gamle ikoner
         $Desktops = @(
@@ -66,7 +70,8 @@
             if (Test-Path $Path) {
                 Get-ChildItem -Path $Path -Filter *.lnk -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
                     Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue
-                    Write-Host "Removed: $($_.FullName)" -ForegroundColor Green}}
+                    Write-Host "$(Get-LogDate)`t        - Removed: $($_.FullName)" -ForegroundColor Green}}
+            Start-Sleep -S 5
             
                 Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk" -Destination $Path
                 Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook (classic).lnk" -Destination $Path
