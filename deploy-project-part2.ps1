@@ -62,29 +62,26 @@
 # Setup Desktop icons
     Write-Host "$(Get-LogDate)`t    Setting desktop icons" -ForegroundColor Green
 
-    # Fjerner gamle ikoner
-        $Desktops = @(
-        "$env:USERPROFILE\Desktop",
-        "C:\Users\Public\Desktop") + (Get-ChildItem "C:\Users" -Directory).FullName | ForEach-Object { "$_\Desktop" }
-        foreach ($Path in $Desktops) {
-            if (Test-Path $Path) {
-                Get-ChildItem -Path $Path -Filter *.lnk -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-                    Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue
-                    Write-Host "$(Get-LogDate)`t        - Removed: $($_.FullName)" -ForegroundColor Green}}
-            Start-Sleep -S 5
-            
-                Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk" -Destination $Path
-                Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook (classic).lnk" -Destination $Path
-                    $OutlookShortcut = Join-path $Path -ChildPath "Outlook (classic).lnk"
-                    Rename-Item -Path $OutlookShortcut -NewName "Outlook.lnk"
-                Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Word.lnk" -Destination $Path
-                Copy-item "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk" -Destination $Path  
-                
-                
-                }
+    # Fjern alle .lnk filer fra public og bruger desktop
+        Remove-Item -Path "$env:SystemDrive\Users\Public\Desktop\*.lnk" -Confirm:$False -ErrorAction SilentlyContinue
+        Remove-Item -Path "$env:SystemDrive\Users\$Env:username\Desktop\*.lnk" -Confirm:$False -ErrorAction SilentlyContinue
+
+    # Tilføj nye .lnk filer til public og bruger desktop
+        $Shortcuts = @( "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk",
+                        "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook (classic).lnk",
+                        "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Word.lnk",
+                        "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk")
+
+        foreach ($Shortcut in $Shortcuts) {
+            Write-Host "Kopierer: $Shortcut" -ForegroundColor Green
+            Start-Sleep -Seconds 1
+            Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\Public\Desktop\" -Force -ErrorAction SilentlyContinue
+            Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\$Env:username\Desktop\" -Force -ErrorAction SilentlyContinue}
 
     # Indsæt nye ikoner
     
+
+
 <#
 # Pin icons to taskbar
 
