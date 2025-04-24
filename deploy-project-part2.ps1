@@ -63,6 +63,7 @@
     Write-Host "$(Get-LogDate)`t    Setting desktop icons" -ForegroundColor Green
 
     # Fjern alle .lnk filer fra public og bruger desktop
+        Write-Host "$(Get-LogDate)`t        - Removing desktop icons" -ForegroundColor Yellow
         Remove-Item -Path "$env:SystemDrive\Users\Public\Desktop\*.lnk" -Confirm:$False -ErrorAction SilentlyContinue
         Remove-Item -Path "$env:SystemDrive\Users\$Env:username\Desktop\*.lnk" -Confirm:$False -ErrorAction SilentlyContinue
 
@@ -73,7 +74,7 @@
                         "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk")
 
         foreach ($Shortcut in $Shortcuts) {
-            Write-Host "Kopierer: $Shortcut" -ForegroundColor Green
+            Write-Host "$(Get-LogDate)`t        - Kopierer: $Shortcut" -ForegroundColor Yellow
             Start-Sleep -Seconds 1
             Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\Public\Desktop\" -Force -ErrorAction SilentlyContinue
             Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\$Env:username\Desktop\" -Force -ErrorAction SilentlyContinue}
