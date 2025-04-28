@@ -8,80 +8,68 @@
     Write-Host "$(Get-LogDate)`t    Awaiting internet connectivity" -ForegroundColor Green -NoNewline
     do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
     Write-host " [GRANTED]" -ForegroundColor Green
+    Start-Sleep -Seconds 3
+    Clear-Host
 
-# Install printer
-    Write-Host "$(Get-LogDate)`t    Installing printers." -ForegroundColor Green
-    Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
-    Install-Printer -All -NavisionPrinter
+# Starter installationen
+    Write-Host "`n$(Get-LogDate)`tINSTALLATIONEN BEGYNDER" -f Green
 
-# Configure Windows
+# Windows Aktivering som job
+    Start-Job -Name "Windows Activation" -ScriptBlock {& ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID} | Out-Null
+
+# Installere printer
+    Write-Host "$(Get-LogDate)`t    Installere Printere:" -f Green
+    Write-Host "$(Get-LogDate)`t        - Starter printer installation i baggrunden." -f Yellow;
+    Start-Job -Name "Printer Installation" -ScriptBlock {
+        Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
+        Install-Printer -All -NavisionPrinter} | Out-Null
+
+# Konfigurer Windows
     Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/WinOptimizer/main/Winoptimizer.ps1" | Invoke-Expression
     Start-WinAntiBloat
     Start-WinSettings
     Start-WinSecurity
     Install-App -Name "Office, Chrome, 7zip, VLC" -EnableAutoupdate
 
-# Activation as background job
-        Write-Host "$(Get-LogDate)`t    Activation in the background.." -ForegroundColor Green
-
-        $activationJob = Start-Job -ScriptBlock {
-            #Office
-            & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook
-            
-            Start-Sleep -S 10
-            
-            # Windows
-            & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID}
-
-            Wait-Job -Name $activationJob
-# Install Endpoint Protection
-    # Placeholder
+# Office aktivering som job
+    Start-Job -Name "Office Activation" -ScriptBlock { & ([ScriptBlock]::Create((irm https://get.activated.win))) /Ohook } | Out-Null
 
 # Action1
     
     # Download
-    Write-Host "$(Get-LogDate)`t    Installing Action1.." -ForegroundColor Green
-    Write-Host "$(Get-LogDate)`t        - Downloading." -ForegroundColor Yellow
-    $link = "https://app.eu.action1.com/agent/51fced32-7e39-11ee-b2da-3151362a23c3/Windows/agent(My_Organization).msi"
-    $path = join-path -Path $env:TMP -ChildPath (split-path $link -Leaf)
-    (New-Object net.webclient).Downloadfile("$link", "$path") | Out-Null
-    
+        Write-Host "$(Get-LogDate)`t    Installerer Action1.." -ForegroundColor Green
+        Write-Host "$(Get-LogDate)`t        - Downloader.." -ForegroundColor Yellow
+        $link = "https://app.eu.action1.com/agent/51fced32-7e39-11ee-b2da-3151362a23c3/Windows/agent(My_Organization).msi"
+        $path = join-path -Path $env:TMP -ChildPath (split-path $link -Leaf)
+        (New-Object net.webclient).Downloadfile("$link", "$path") | Out-Null
+        
     # Install
-    Write-Host "$(Get-LogDate)`t        - Installing." -ForegroundColor Yellow
-    msiexec /i $path /quiet
+        Write-Host "$(Get-LogDate)`t        - Installere.." -ForegroundColor Yellow
+        msiexec /i $path /quiet
     
     # Confirming installation
-    Write-Host "$(Get-LogDate)`t        - Awaiting agent to confirmed running." -ForegroundColor Yellow
-    do{Start-Sleep -S 1; Write-Host "." -NoNewline -ForegroundColor Yellow}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
-    Write-Host "$(Get-LogDate)`t        - Complete." -ForegroundColor Yellow
+        Write-Host "$(Get-LogDate)`t        - Bekræfter agenten kører.." -ForegroundColor Yellow 
+        do{Start-Sleep -S 1;}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
+        Write-Host "$(Get-LogDate)`t        - Bekræftet." -ForegroundColor Yellow
 
-# Remove Scheduled task
-    Write-Host "$(Get-LogDate)`t    Cleaning up shceduled task." -ForegroundColor Green
-    Unregister-ScheduledTask -TaskName "deploy-project-part2" -Confirm:$false | Out-Null
-
-# Setup Desktop icons
-    Write-Host "$(Get-LogDate)`t    Setting desktop icons" -ForegroundColor Green
+# Skriverbords ikoner
+    Write-Host "$(Get-LogDate)`t    Fikser skrivebordsikoner" -ForegroundColor Green
 
     # Fjern alle .lnk filer fra public og bruger desktop
-        Write-Host "$(Get-LogDate)`t        - Removing desktop icons" -ForegroundColor Yellow
+        Write-Host "$(Get-LogDate)`t        - Fjerner alle genveje fra skrivebordet" -ForegroundColor Yellow
         Remove-Item -Path "$env:SystemDrive\Users\Public\Desktop\*.lnk" -Confirm:$False -ErrorAction SilentlyContinue
         Remove-Item -Path "$env:SystemDrive\Users\$Env:username\Desktop\*.lnk" -Confirm:$False -ErrorAction SilentlyContinue
 
     # Tilføj nye .lnk filer til public og bruger desktop
+        Write-Host "$(Get-LogDate)`t        - Tilføjer nye genveje til skrivebordet" -ForegroundColor Yellow
         $Shortcuts = @( "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Google Chrome.lnk",
                         "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Outlook (classic).lnk",
                         "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Word.lnk",
                         "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk")
 
         foreach ($Shortcut in $Shortcuts) {
-            Write-Host "$(Get-LogDate)`t        - Kopierer: $Shortcut" -ForegroundColor Yellow
             Start-Sleep -Seconds 1
-            Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\Public\Desktop\" -Force -ErrorAction SilentlyContinue
-            Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\$Env:username\Desktop\" -Force -ErrorAction SilentlyContinue}
-
-    # Indsæt nye ikoner
-    
-
+            Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\$Env:username\Desktop\" -Force -ErrorAction SilentlyContinue}    
 
 <#
 # Pin icons to taskbar
@@ -127,13 +115,24 @@
     Start-Input
 #>
 
-# Vent på at aktivering er færdig
-    Write-Host "$(Get-LogDate)`t    Afventer afslutning af aktivering..." -ForegroundColor Green
-    Wait-Job $activationJob | Out-Null
-    Receive-Job $activationJob | Out-Null
-    Remove-Job $activationJob | Out-Null
-    Write-Host "$(Get-LogDate)`t        - Aktivering fuldført." -ForegroundColor Green
+# Færdiggør installationen
+    Write-Host "$(Get-LogDate)`t    Færdiggøre installationeng" -ForegroundColor Green
+    
+        Write-Host "$(Get-LogDate)`t        - Windows aktivering" -ForegroundColor Yellow -NoNewline
+        Wait-Job -Name "Windows Activation" | Out-Null
+        Write-Host "$(Get-LogDate)`t[FULDENDT]" -ForegroundColor Yellow 
 
+        Write-Host "$(Get-LogDate)`t        - Office aktivering" -ForegroundColor Yellow -NoNewline
+        Wait-Job -Name "Microsoft Activation" | Out-Null
+        Write-Host "$(Get-LogDate)`t[FULDENDT]" -ForegroundColor Yellow 
+    
+        Write-host "$(Get-LogDate)`t        - Printer installation" -ForegroundColor Yellow -NoNewline
+        Wait-Job -Name "Printer Installation" | Out-Null
+        Write-host "$(Get-LogDate)`t[FULDENDT]" -ForegroundColor Yellow
+
+        # Remove Scheduled task
+        Write-Host "$(Get-LogDate)`t        - fjerner startup script i planlagte opgaver..." -ForegroundColor Green
+        Unregister-ScheduledTask -TaskName "deploy-project-part2" -Confirm:$false | Out-Null
 
 Add-Type -AssemblyName System.Windows.Forms
 $global:balmsg = New-Object System.Windows.Forms.NotifyIcon

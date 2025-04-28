@@ -15,7 +15,7 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
 
 # Wait for internet
     Write-Host "$(Get-LogDate)`t    Venter på internet" -ForegroundColor Green -NoNewline
-    do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
+    do{Write-Host "." -ForegroundColor Green -NoNewline; Start-Sleep -Seconds 3}until((Test-Connection github.com -Quiet) -eq $true)
     Write-host " [VERIFICERET]" -ForegroundColor Green
 
 # Opgrader TLS
@@ -23,11 +23,18 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
     [System.Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor ([System.Net.ServicePointManager]::SecurityProtocol)
 
 # Set DNS to cloudflare for optimized performance
-    Write-Host "$(Get-LogDate)`t    Opsætter DNS til Cloudflare." -ForegroundColor Green
     if($env:USERDNSDOMAIN -eq $null){
-        $job = Start-Job -ScriptBlock {
-        $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
-        Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null}}
+        Write-Host "$(Get-LogDate)`t    Opsætter DNS til Cloudflare på alle adapterer:" -ForegroundColor Green
+        $nics = (Get-NetAdapter -Physical).Name
+        foreach ($nic in $nics) {
+            Write-Host "$(Get-LogDate)`t        - $nic." -ForegroundColor Green
+            Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null
+            Start-Sleep -Seconds 5}}
+    
+
+# Setting Timeout
+    powercfg -change -monitor-timeout-ac 180 # Tilsluttet Strøm
+    powercfg -change -monitor-timeout-dc 45 # Til Opladning
 
 # Rename PC
     # Klargøring
