@@ -38,8 +38,6 @@
     
     # Download
         Write-Host "$(Get-LogDate)`t    Installerer Action1.." -ForegroundColor Green
-    
-    <#    
         Write-Host "$(Get-LogDate)`t        - Downloader.." -ForegroundColor Yellow
         $link = "https://app.eu.action1.com/agent/51fced32-7e39-11ee-b2da-3151362a23c3/Windows/agent(My_Organization).msi"
         $path = join-path -Path $env:TMP -ChildPath (split-path $link -Leaf)
@@ -53,7 +51,6 @@
         Write-Host "$(Get-LogDate)`t        - Bekræfter agenten kører.." -ForegroundColor Yellow 
         do{Start-Sleep -S 1;}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
         Write-Host "$(Get-LogDate)`t        - Bekræftet." -ForegroundColor Yellow
-    #>
 
 # Skriverbords ikoner
     Write-Host "$(Get-LogDate)`t    Fikser skrivebordsikoner" -ForegroundColor Green
@@ -135,6 +132,7 @@
 
         Write-host "$(Get-LogDate)`t        - Fjerner deployment script i planlagte opgaver" -ForegroundColor Yellow -NoNewline
         Unregister-ScheduledTask -TaskName "deploy-project-part2" -Confirm:$false | Out-Null
+        Remove-Item -Path "$env:HOMEDRIVE/deploy-project-part2" -Force | Out-Null
         Write-host "`t[FULDENDT]" -ForegroundColor Yellow
 
 Add-Type -AssemblyName PresentationFramework
