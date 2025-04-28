@@ -32,8 +32,11 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
             Start-Sleep -Seconds 5}}    
 
 # Setting Timeout
-    powercfg -change -monitor-timeout-ac 180 # Tilsluttet Strøm
-    powercfg -change -monitor-timeout-dc 45 # Til Opladning
+    powercfg -change -monitor-timeout-ac 180 # Tilsluttet Strøm, sluk skærm
+    powercfg -change -standby-timeout-ac 180 # Tilsluttet Strøm, enhed i slumnretilstand
+
+    powercfg -change -monitor-timeout-dc 45 # Tilsluttet Opladning, sluk skærm
+    powercfg -change -standby-timeout-dc 60 # Tilsluttet opladning, enhed i slumnretilstand
 
 # Rename PC
     # Klargøring
