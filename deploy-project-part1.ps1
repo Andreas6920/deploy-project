@@ -29,8 +29,7 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
         foreach ($nic in $nics) {
             Write-Host "$(Get-LogDate)`t        - $nic." -ForegroundColor Green
             Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null
-            Start-Sleep -Seconds 5}}
-    
+            Start-Sleep -Seconds 5}}    
 
 # Setting Timeout
     powercfg -change -monitor-timeout-ac 180 # Tilsluttet Strøm
@@ -73,7 +72,7 @@ Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
     
     # Starter
     $ScriptUrl = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/deploy-project-part2.ps1"
-    $ScriptName = [System.IO.Path]::GetFileNameWithoutExtension((Split-Path $ScriptUrl -Leaf))
+    $ScriptName = "deploy-project-part2"
     $ScriptFolder = $env:HOMEDRIVE
     $ScriptLocation = Join-Path -Path $Scriptfolder -ChildPath (Split-Path $ScriptUrl -Leaf)
     $CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name

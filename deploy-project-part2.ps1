@@ -5,9 +5,9 @@
     function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
 
 # Wait for internet
-    Write-Host "$(Get-LogDate)`t    Awaiting internet connectivity" -ForegroundColor Green -NoNewline
-    do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
-    Write-host " [GRANTED]" -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t    Venter på internet" -ForegroundColor Green -NoNewline
+    do{Write-Host "." -ForegroundColor Green -NoNewline; Start-Sleep -Seconds 3}until((Test-Connection github.com -Quiet) -eq $true)
+    Write-host " [VERIFICERET]" -ForegroundColor Green
     Start-Sleep -Seconds 3
     Clear-Host
 
@@ -38,6 +38,8 @@
     
     # Download
         Write-Host "$(Get-LogDate)`t    Installerer Action1.." -ForegroundColor Green
+    
+    <#    
         Write-Host "$(Get-LogDate)`t        - Downloader.." -ForegroundColor Yellow
         $link = "https://app.eu.action1.com/agent/51fced32-7e39-11ee-b2da-3151362a23c3/Windows/agent(My_Organization).msi"
         $path = join-path -Path $env:TMP -ChildPath (split-path $link -Leaf)
@@ -51,6 +53,7 @@
         Write-Host "$(Get-LogDate)`t        - Bekræfter agenten kører.." -ForegroundColor Yellow 
         do{Start-Sleep -S 1;}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
         Write-Host "$(Get-LogDate)`t        - Bekræftet." -ForegroundColor Yellow
+    #>
 
 # Skriverbords ikoner
     Write-Host "$(Get-LogDate)`t    Fikser skrivebordsikoner" -ForegroundColor Green
@@ -116,30 +119,23 @@
 #>
 
 # Færdiggør installationen
-    Write-Host "$(Get-LogDate)`t    Færdiggøre installationeng" -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t    Færdiggøre installationen:" -ForegroundColor Green
     
         Write-Host "$(Get-LogDate)`t        - Windows aktivering" -ForegroundColor Yellow -NoNewline
         Wait-Job -Name "Windows Activation" | Out-Null
-        Write-Host "$(Get-LogDate)`t[FULDENDT]" -ForegroundColor Yellow 
+        Write-Host "`t[FULDENDT]" -ForegroundColor Yellow 
 
         Write-Host "$(Get-LogDate)`t        - Office aktivering" -ForegroundColor Yellow -NoNewline
-        Wait-Job -Name "Microsoft Activation" | Out-Null
-        Write-Host "$(Get-LogDate)`t[FULDENDT]" -ForegroundColor Yellow 
+        Wait-Job -Name "Office Activation" | Out-Null
+        Write-Host "`t[FULDENDT]" -ForegroundColor Yellow 
     
         Write-host "$(Get-LogDate)`t        - Printer installation" -ForegroundColor Yellow -NoNewline
         Wait-Job -Name "Printer Installation" | Out-Null
-        Write-host "$(Get-LogDate)`t[FULDENDT]" -ForegroundColor Yellow
+        Write-host "`t[FULDENDT]" -ForegroundColor Yellow
 
-        # Remove Scheduled task
-        Write-Host "$(Get-LogDate)`t        - fjerner startup script i planlagte opgaver..." -ForegroundColor Green
+        Write-host "$(Get-LogDate)`t        - Fjerner deployment script i planlagte opgaver" -ForegroundColor Yellow -NoNewline
         Unregister-ScheduledTask -TaskName "deploy-project-part2" -Confirm:$false | Out-Null
+        Write-host "`t[FULDENDT]" -ForegroundColor Yellow
 
-Add-Type -AssemblyName System.Windows.Forms
-$global:balmsg = New-Object System.Windows.Forms.NotifyIcon
-$path = (Get-Process -id $pid).Path
-$balmsg.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
-$balmsg.BalloonTipIcon = [System.Windows.Forms.ToolTipIcon]::Info
-$balmsg.BalloonTipText = "Deployment scriptet er nu fuldendt."
-$balmsg.BalloonTipTitle = "Deployment Script"
-$balmsg.Visible = $true
-$balmsg.ShowBalloonTip(20000)
+Add-Type -AssemblyName PresentationFramework
+[System.Windows.MessageBox]::Show("Deployment scriptet er nu fuldendt.", "Deployment Script", "OK", "Information")
