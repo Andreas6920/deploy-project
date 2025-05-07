@@ -71,8 +71,69 @@
             Start-Sleep -Seconds 1
             Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\$Env:username\Desktop\" -Force -ErrorAction SilentlyContinue}    
 
+
+
+#Pinning Applications
+
+    # Tjek om Windows er installeret på dansk
+        $WinLang = (Get-Culture).Name
+        if ($WinLang -like "da-*") {
+        Write-Host "$(Get-LogDate)`t    Pinning:" -f Green
+        Stop-Input
+        
+        # Start Menu
+            Write-Host "$(Get-LogDate)`t        - Start menu.." -ForegroundColor Yellow
+            $app = New-Object -ComObject Shell.Application
+            $key = New-Object -com Wscript.Shell
+            $app.open("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\")    
+            Start-Sleep -Seconds 10
+            $PinnedApps = @("Google","Outlook","Word","Excel")
+            foreach ($PinnedApp in $PinnedApps) {
+            $key.SendKeys($PinnedApp)
+            Start-Sleep -Seconds 2
+            $key.SendKeys("+{F10}")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("f")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("f")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("f")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("f")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("{ENTER}")
+            Start-Sleep -Seconds 1}
+            $key.SendKeys("%{F4}")
+
+            Start-Sleep -Seconds 3
+
+        # Taskbar
+            Write-Host "$(Get-LogDate)`t        - Taskbar.." -ForegroundColor Yellow
+            $app = New-Object -ComObject Shell.Application
+            $key = New-Object -com Wscript.Shell
+            $app.open("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\")    
+            Start-Sleep -Seconds 10
+            $PinnedApps = @("Google","Outlook","Word","Excel")
+            foreach ($PinnedApp in $PinnedApps) {
+            $key.SendKeys($PinnedApp)
+            Start-Sleep -Seconds 2
+            $key.SendKeys("+{F10}")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("f")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("f")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("f")
+            Start-Sleep -Seconds 1
+            $key.SendKeys("{ENTER}")
+            Start-Sleep -Seconds 1}
+            $key.SendKeys("%{F4}")
+        
+            Start-Input} 
+        
+        else {Write-Host "Windows er ikke på dansk. Skipper fastgørelse." -ForegroundColor Yellow}
+
 <#
-# Pin icons to taskbar
 
     Write-Host "$(Get-LogDate)`t    Indstiller taskbar pins" -ForegroundColor Green
     
