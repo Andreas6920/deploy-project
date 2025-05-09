@@ -20,7 +20,7 @@
 
     # Verify internet connection
         Write-Host "$(Get-LogDate)`t    Awaiting Internet Conenction" -ForegroundColor Green -NoNewline
-        do{Write-Host "." -ForegroundColor Green -NoNewline; sleep 3}until((Test-Connection github.com -Quiet) -eq $true)
+        do{Write-Host "." -ForegroundColor Green -NoNewline; Start-Sleep -Seconds 3}until((Test-Connection github.com -Quiet) -eq $true)
         Write-host " [VERIFIED]" -ForegroundColor Green
     
     # Opgrader TLS
@@ -37,7 +37,7 @@
 
 # Rename PC
 
-    Write-Host "[$(Get-LogDate)]`t- Renaming PC:" -ForegroundColor Green
+    Write-Host "$(Get-LogDate)`t- Renaming PC:" -ForegroundColor Green
             
     # Formatting and creating computer name
         Write-Host "`t- Firstname: " -NoNewline -f yellow;
@@ -66,19 +66,18 @@
         $ThisPCDescription = Get-WmiObject -class Win32_OperatingSystem
         $ThisPCDescription.Description = $PCDescription
         $ThisPCDescription.put() | out-null
-        Write-Host "[$(Get-LogDate)]`t- Takes affect after reboot.." -ForegroundColor Green
-
+        Write-Host "$(Get-LogDate)`t- Takes affect after reboot.." -ForegroundColor Green
 
 # WinOptimizer
     
     # Run optimizer script
         $WinOptimizerUrl = "https://raw.githubusercontent.com/Andreas6920/WinOptimizer/refs/heads/main/Winoptimizer.ps1"
-        Invoke-RestMethod $WinOptimizerUrl | Invoke-Expression; 
-        Start-WinAntiBloat
+        Invoke-RestMethod $WinOptimizerUrl | Invoke-Expression
         Start-WinSettings
+        Start-WinAntiBloat
         Start-WinSecurity
     
-#  Install apps (From WinOptimizer script)
+#  Install Apps (From WinOptimizer script)
 
     # Run script
         Install-App -Name "Office, Chrome, 7zip, VLC" -EnableAutoupdate # NOTE: Office installation takes 10 - 30 mins.
@@ -89,7 +88,7 @@
                 Start-Sleep -Seconds 5
                 & ([ScriptBlock]::Create((Invoke-RestMethod https://get.activated.win))) /Ohook} | Out-Null
     
-# Printer Installation
+# Install Printers
 
     # Install all printers as a job in the background
         Write-Host "$(Get-LogDate)`t    Printer installation:" -f Green
@@ -149,36 +148,36 @@
             Start-Sleep -Seconds 10
             $PinnedApps = @("Google","Outlook","Word","Excel")
             foreach ($PinnedApp in $PinnedApps) {
-                    $key.SendKeys($PinnedApp)
-                    
-                    # Pin To Start Menu
-                        Start-Sleep -Seconds 3
-                        $key.SendKeys("+{F10}")
-                        Start-Sleep -Seconds 2
-                        $key.SendKeys("f")
-                        Start-Sleep -Milliseconds 400
-                        $key.SendKeys("f")
-                        Start-Sleep -Milliseconds 400
-                        $key.SendKeys("f")
-                        Start-Sleep -Milliseconds 400
-                        $key.SendKeys("f")
-                        Start-Sleep -Seconds 2
-                        $key.SendKeys("{ENTER}")
-                    
-                    # Pin To Taskbar
-                        Start-Sleep -Seconds 1
-                        $key.SendKeys("+{F10}")
-                        Start-Sleep -Seconds 2
-                        $key.SendKeys("f")
-                        Start-Sleep -Milliseconds 400
-                        $key.SendKeys("f")
-                        Start-Sleep -Milliseconds 400
-                        $key.SendKeys("f")
-                        Start-Sleep -Seconds 2
-                        $key.SendKeys("{ENTER}")}
-                        Start-Sleep -Seconds 3
-                        $key.SendKeys("%{F4}")
-                        Start-Input}
+                $key.SendKeys($PinnedApp)
+                
+                # Pin To Start Menu
+                    Start-Sleep -Seconds 3
+                    $key.SendKeys("+{F10}")
+                    Start-Sleep -Seconds 2
+                    $key.SendKeys("f")
+                    Start-Sleep -Milliseconds 400
+                    $key.SendKeys("f")
+                    Start-Sleep -Milliseconds 400
+                    $key.SendKeys("f")
+                    Start-Sleep -Milliseconds 400
+                    $key.SendKeys("f")
+                    Start-Sleep -Seconds 2
+                    $key.SendKeys("{ENTER}")
+                
+                # Pin To Taskbar
+                    Start-Sleep -Seconds 1
+                    $key.SendKeys("+{F10}")
+                    Start-Sleep -Seconds 2
+                    $key.SendKeys("f")
+                    Start-Sleep -Milliseconds 400
+                    $key.SendKeys("f")
+                    Start-Sleep -Milliseconds 400
+                    $key.SendKeys("f")
+                    Start-Sleep -Seconds 2
+                    $key.SendKeys("{ENTER}")}
+                    Start-Sleep -Seconds 3
+                    $key.SendKeys("%{F4}")
+                    Start-Input}
 
 # Færdiggør installationen
     Write-Host "$(Get-LogDate)`t    Checking the background tasks:" -ForegroundColor Green
