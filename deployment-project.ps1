@@ -93,9 +93,8 @@
     # Install all printers as a job in the background
         Write-Host "$(Get-LogDate)`t    Printer installation:" -f Green
         Write-Host "$(Get-LogDate)`t        - Starting printer installation in the background." -f Yellow;
-        Start-Job -Name "Printer Installation" -ScriptBlock {
-            Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
-            Install-Printer -All -NavisionPrinter} | Out-Null
+        Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
+        Install-Printer -All -NavisionPrinter
 
 # Action1
     
