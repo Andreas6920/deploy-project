@@ -14,7 +14,7 @@
         Function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
     
 # Introduction
-        Write-Host "$(Get-LogDate)`tOPSÆTNING STARTER" -f Green
+        Write-Host "$(Get-LogDate)`tConfiguration Starts" -f Green
 
 # Internet connection setup
 
@@ -29,10 +29,9 @@
     
     # Set DNS to cloudflare for optimized performance
         Write-Host "$(Get-LogDate)`t    Seting DNS to Cloudflare for faster connections." -ForegroundColor Green
-        if($env:USERDNSDOMAIN -eq $null){
-            $job = Start-Job -ScriptBlock {
+        Start-Job -ScriptBlock {
             $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
-            Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null}}
+            Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null}
             do{Start-Sleep -Seconds 3}until((Test-Connection google.com -Quiet) -eq $true)
 
 # Rename PC
@@ -79,7 +78,7 @@
 #  Install Apps (From WinOptimizer script)
 
     # Run script
-        Install-App -Name "Office, Chrome, 7zip, VLC" # NOTE: Office installation takes 10 - 30 mins.
+        Install-App -Name "Office, Chrome, 7zip, VLC" # NOTE: Office installation takes 10 - 20 mins.
 
     # Activate Windows and Office as a job in the background
         Start-Job -Name "Windows & Office Activation" -ScriptBlock {
