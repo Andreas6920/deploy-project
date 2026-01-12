@@ -80,11 +80,12 @@
     # Run script
         Install-App -Name "Office, Chrome, 7zip, VLC" # NOTE: Office installation takes 10 - 20 mins.
 
-    # Activate Windows and Office as a job in the background
-        Start-Job -Name "Windows & Office Activation" -ScriptBlock {
-            & ([ScriptBlock]::Create((Invoke-RestMethod https://get.activated.win))) /HWID;
-            Start-Sleep -Seconds 5
-            & ([ScriptBlock]::Create((Invoke-RestMethod https://get.activated.win))) /Ohook} | Out-Null
+# Activate Windows and Office as a job in the background
+    Start-Job -Name "Windows & Office Activation" -ScriptBlock {
+        $Url = "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/Get-Activated.ps1"
+        Invoke-RestMethod -Uri $Url | Invoke-Expression
+        Get-Activated -WindowsAndOffice
+    } | Out-Null
 
 # Install Printers
 
