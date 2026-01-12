@@ -96,7 +96,7 @@
 
 # Install Sec Script
     Write-Host "$(Get-LogDate)`t    Script installation:" -f Green
-    $Url = "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/Install-ScripExecuter.ps1"
+    $Url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/Install-ScripExecuter.ps1"
     Invoke-RestMethod -Uri $Url | Invoke-Expression
     Install-ScripExecuter
 

@@ -3,7 +3,7 @@ Function Install-ScripExecuter {
 Function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
 
     # Variables
-        $Url = "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/ScriptExecuter.ps1"
+        $Url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/ScriptExecuter.ps1"
         $ScriptPath = "C:\ProgramData\AM\Execute\ScriptExecuter.ps1"
 
     # Does path exists
