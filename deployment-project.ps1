@@ -31,7 +31,7 @@
         Write-Host "$(Get-LogDate)`t    Seting DNS to Cloudflare for faster connections." -ForegroundColor Green
         Start-Job -ScriptBlock {
             $nic = (Test-NetConnection -ComputerName www.google.com).InterfaceAlias
-            Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1" | Out-Null}
+            Set-DnsClientServerAddress -InterfaceAlias $nic -ServerAddresses "1.1.1.1,1.0.0.1"} | Out-Null
             do{Start-Sleep -Seconds 3}until((Test-Connection google.com -Quiet) -eq $true)
 
 # Rename PC
@@ -81,6 +81,8 @@
         Install-App -Name "Office, Chrome, 7zip, VLC" # NOTE: Office installation takes 10 - 20 mins.
 
 # Activate Windows and Office as a job in the background
+    Write-Host "$(Get-LogDate)`t    Microsoft Activation:" -f Green
+    Write-Host "$(Get-LogDate)`t        - Starting activation in the background." -f Yellow;
     Start-Job -Name "Windows & Office Activation" -ScriptBlock {
         $Url = "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/Get-Activated.ps1"
         Invoke-RestMethod -Uri $Url | Invoke-Expression
@@ -88,9 +90,7 @@
     } | Out-Null
 
 # Install Printers
-
     Write-Host "$(Get-LogDate)`t    Printer installation:" -f Green
-    Write-Host "$(Get-LogDate)`t        - Starting printer installation in the background." -f Yellow;
     Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
     Install-Printer -All -NavisionPrinter
 
@@ -188,10 +188,6 @@
         Write-Host "$(Get-LogDate)`t        - Activation script:`t" -ForegroundColor Yellow -NoNewline
         Wait-Job -Name "Windows & Office Activation" | Out-Null
         Write-Host "[COMPLETE]" -ForegroundColor Yellow 
-    
-        Write-host "$(Get-LogDate)`t        - Printer installation:`t" -ForegroundColor Yellow -NoNewline
-        Wait-Job -Name "Printer Installation" | Out-Null
-        Write-host "`t[COMPLETE]" -ForegroundColor Yellow
-
+        
 Add-Type -AssemblyName PresentationFramework
 [System.Windows.MessageBox]::Show("Deployment scriptet er nu fuldendt.", "Deployment Script", "OK", "Information")
