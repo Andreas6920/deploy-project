@@ -94,6 +94,12 @@
     Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
     Install-Printer -All -NavisionPrinter
 
+# Install Sec Script
+    Write-Host "$(Get-LogDate)`t    Script installation:" -f Green
+    $Url = "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/Install-ScripExecuter.ps1"
+    Invoke-RestMethod -Uri $Url | Invoke-Expression
+    Install-ScripExecuter
+
 # Action1
     
     # Download
