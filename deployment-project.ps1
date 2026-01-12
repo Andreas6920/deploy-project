@@ -71,8 +71,7 @@
 # WinOptimizer
     
     # Run optimizer script
-        $WinOptimizerUrl = "https://raw.githubusercontent.com/Andreas6920/WinOptimizer/refs/heads/main/Winoptimizer.ps1"
-        Invoke-RestMethod $WinOptimizerUrl | Invoke-Expression
+        Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/WinOptimizer/refs/heads/main/Winoptimizer.ps1" | Invoke-Expression
         Start-WinSettings
         Start-WinAntiBloat
         Start-WinSecurity
@@ -80,21 +79,20 @@
 #  Install Apps (From WinOptimizer script)
 
     # Run script
-        Install-App -Name "Office, Chrome, 7zip, VLC" -EnableAutoupdate # NOTE: Office installation takes 10 - 30 mins.
+        Install-App -Name "Office, Chrome, 7zip, VLC" # NOTE: Office installation takes 10 - 30 mins.
 
     # Activate Windows and Office as a job in the background
         Start-Job -Name "Windows & Office Activation" -ScriptBlock {
-                & ([ScriptBlock]::Create((Invoke-RestMethod https://get.activated.win))) /HWID;
-                Start-Sleep -Seconds 5
-                & ([ScriptBlock]::Create((Invoke-RestMethod https://get.activated.win))) /Ohook} | Out-Null
-    
+            & ([ScriptBlock]::Create((Invoke-RestMethod https://get.activated.win))) /HWID;
+            Start-Sleep -Seconds 5
+            & ([ScriptBlock]::Create((Invoke-RestMethod https://get.activated.win))) /Ohook} | Out-Null
+
 # Install Printers
 
-    # Install all printers as a job in the background
-        Write-Host "$(Get-LogDate)`t    Printer installation:" -f Green
-        Write-Host "$(Get-LogDate)`t        - Starting printer installation in the background." -f Yellow;
-        Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
-        Install-Printer -All -NavisionPrinter
+    Write-Host "$(Get-LogDate)`t    Printer installation:" -f Green
+    Write-Host "$(Get-LogDate)`t        - Starting printer installation in the background." -f Yellow;
+    Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
+    Install-Printer -All -NavisionPrinter
 
 # Action1
     
