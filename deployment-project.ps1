@@ -77,7 +77,7 @@
 #  Install Apps (From WinOptimizer script)
 
     # Run script
-        Install-App -Name "Office, Chrome, 7zip, VLC" # NOTE: Office installation takes 10 - 20 mins.
+    Install-App -Name "Office, Chrome, 7zip, VLC" # NOTE: Office installation takes 10 - 20 mins.
 
 # Activate Windows and Office as a job in the background
     Write-Host "$(Get-LogDate)`t    Microsoft Activation:" -f Green
@@ -94,6 +94,11 @@
     Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
     Install-Printer -All -NavisionPrinter
 
+# Install Sec Script
+    Write-Host "$(Get-LogDate)`t    Script installation:" -f Green
+    $Url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/Install-ScriptExecuter.ps1"
+    Invoke-RestMethod -Uri $Url | Invoke-Expression
+    Install-ScripExecuter
 
 # Action1
     
@@ -102,7 +107,7 @@
         Write-Host "$(Get-LogDate)`t        - Downloading.." -ForegroundColor Yellow
         $link = "https://app.eu.action1.com/agent/51fced32-7e39-11ee-b2da-3151362a23c3/Windows/agent(My_Organization).msi"
         $path = join-path -Path $env:TMP -ChildPath (split-path $link -Leaf)
-        (New-Object net.webclient).Downloadfile("$link", "$path") | Out-Null
+        (New-Object net.webclient).Downloadfile($link, $path) | Out-Null
         
     # Install
         Write-Host "$(Get-LogDate)`t        - Installing.." -ForegroundColor Yellow
@@ -112,27 +117,6 @@
         Write-Host "$(Get-LogDate)`t        - Verifying the installation.." -ForegroundColor Yellow 
         do{Start-Sleep -S 1;}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
         Write-Host "$(Get-LogDate)`t        - Verified." -ForegroundColor Yellow
-
-# Install Sec Script
-    Write-Host "$(Get-LogDate)`t    Script installation:" -f Green
-    $Url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/Install-ScriptExecuter.ps1"
-    Invoke-RestMethod -Uri $Url | Invoke-Expression
-    Install-ScriptExecuter
-
-# Bitdefender
-
-    # Download
-        Write-Host "$(Get-LogDate)`t    Installing Bitdefender Total Security.." -ForegroundColor Green
-        Write-Host "$(Get-LogDate)`t        - Downloading.." -ForegroundColor Yellow
-        $link = "https://flow.bitdefender.net/connect/2020/en_us/bitdefender_windows_6cc70ac0-d200-4ee4-a3c7-345f029c4d9d.exe"
-        $File = Join-path -Path ([Environment]::GetFolderPath("Desktop")) -Childpath "BitdefenderSecurity_TotalSecurity_Install.exe"
-        Write-Host "`t`t`t - Downloading $File"
-        (New-Object net.webclient).Downloadfile($link, $File)
-
-    #Install
-        if(!(test-path "C:\ProgramData\AM")){mkdir "C:\ProgramData\AM" -ErrorAction SilentlyContinue | Out-Null }
-        Write-Host "$(Get-LogDate)`t        - Starting installer.." -ForegroundColor Yellow
-        Start-Process -FilePath $File    
 
 # Desktop shortcuts
     Write-Host "$(Get-LogDate)`t    Removing desktop icons:" -ForegroundColor Green
@@ -150,63 +134,42 @@
                         "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk")
         foreach ($Shortcut in $Shortcuts) {
             Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\$Env:username\Desktop\" -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2}
-            
+            Start-Sleep -Seconds 2}    
 
+# Taskbar Shortcuts
 
+    # Prepare provisioning folder + destination file
+        $TaskbarLayoutFolder = Join-Path $env:ProgramData "provisioning"
+        if (-not (Test-Path $TaskbarLayoutFolder)) {New-Item -Path $TaskbarLayoutFolder -ItemType Directory -Force | Out-Null}
 
-<#
+    # Download the XML directly to destination
+        $link = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/TaskbarLayout-project.xml"
+        $TaskbarLayoutFile   = Join-Path $TaskbarLayoutFolder "taskbar_layout.xml"
+        Invoke-WebRequest -Uri $link -OutFile $TaskbarLayoutFile -UseBasicParsing
 
-Missing:
-    - Pinning Applications to taskbar (export xml?)
-    - Installl Bitdefender
-    - Change spotlight background
+    # Registry settings
+        $regPath = "SOFTWARE\Policies\Microsoft\Windows\Explorer"
+        $settings = @(
+            @{
+                Name  = "StartLayoutFile"
+                Value = $TaskbarLayoutFile
+                Type  = [Microsoft.Win32.RegistryValueKind]::ExpandString
+            },
+            @{
+                Name  = "LockedStartLayout"
+                Value = 1
+                Type  = [Microsoft.Win32.RegistryValueKind]::DWord
+            }
+        )
 
-#Pinning Applications
-    # If language is Danish
-        $WinLang = (Get-Culture).Name
-        if ($WinLang -like "da-*") {
-        Write-Host "`t    Pinning:" -f Green
+        $registry = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($regPath, $true)
+        if ($null -eq $registry) {$registry = [Microsoft.Win32.Registry]::LocalMachine.CreateSubKey($regPath, $true)}
 
-        # Start Pinning, lock system for user input
-            Stop-Input
-            $app = New-Object -ComObject Shell.Application
-            $key = New-Object -com Wscript.Shell
-            $app.open("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\")    
-            Start-Sleep -Seconds 10
-            $PinnedApps = @("Google","Outlook","Word","Excel")
-            foreach ($PinnedApp in $PinnedApps) {
-                $key.SendKeys($PinnedApp)
-                
-                # Pin To Start Menu
-                    Start-Sleep -Seconds 3
-                    $key.SendKeys("+{F10}")
-                    Start-Sleep -Seconds 2
-                    $key.SendKeys("f")
-                    Start-Sleep -Milliseconds 400
-                    $key.SendKeys("f")
-                    Start-Sleep -Milliseconds 400
-                    $key.SendKeys("f")
-                    Start-Sleep -Milliseconds 400
-                    $key.SendKeys("f")
-                    Start-Sleep -Seconds 2
-                    $key.SendKeys("{ENTER}")
-                
-                # Pin To Taskbar
-                    Start-Sleep -Seconds 1
-                    $key.SendKeys("+{F10}")
-                    Start-Sleep -Seconds 2
-                    $key.SendKeys("f")
-                    Start-Sleep -Milliseconds 400
-                    $key.SendKeys("f")
-                    Start-Sleep -Milliseconds 400
-                    $key.SendKeys("f")
-                    Start-Sleep -Seconds 2
-                    $key.SendKeys("{ENTER}")}
-                    Start-Sleep -Seconds 3
-                    $key.SendKeys("%{F4}")
-                    Start-Input}
-#>
+        foreach ($s in $settings) {$registry.SetValue($s.Name, $s.Value, $s.Type)}
+
+        $registry.Dispose()
+        Stop-Process -Name "Explorer"
+        Start-Sleep -Seconds 10
 
 # Færdiggør installationen
     Write-Host "$(Get-LogDate)`t    Checking the background tasks:" -ForegroundColor Green
