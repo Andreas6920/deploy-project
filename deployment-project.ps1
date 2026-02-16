@@ -35,36 +35,8 @@
 
 # Rename PC
 
-    Write-Host "$(Get-LogDate)`t- Renaming PC:" -ForegroundColor Green
-            
-    # Formatting and creating computer name
-        Write-Host "`t- Firstname: " -NoNewline -f yellow;
-        $Forename = Read-Host
-        $Forename = $Forename.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
-        Write-Host "`t- Lastname: " -NoNewline -f yellow;
-        $Lastname = Read-Host
-        $Lastname = $Lastname.Replace('æ','a').Replace('ø','o').Replace('å','a').Replace(' ','')
-            $PCName = "PC-"+$Forename.Substring(0,3).ToUpper()+$Lastname.Substring(0,3).ToUpper()
-
-    # Formatting and creating computer description
-        if ($Lastname -notlike "*s"){$Lastname = $Lastname + "'s"}
-        else{$Lastname = $Lastname + "'"}
-        $Lastname = (Get-Culture).TextInfo.ToTitleCase($Lastname)
-        $Forename = (Get-Culture).TextInfo.ToTitleCase($Forename)
-            $PCDescription = $Forename+" "+$Lastname + " PC"
-
-    # Setting Computername
-        $WarningPreference = "SilentlyContinue"
-        Write-Host "`t`t- PC Name:`t`t$PCName" -f Yellow;
-        if($PCName -ne $env:COMPUTERNAME){Rename-computer -newname $PCName}
-
-    # Setting Computerdescription
-        $WarningPreference = "SilentlyContinue"
-        Write-Host "`t`t- PC Description:`t`t$PCDescription" -f Yellow;
-        $ThisPCDescription = Get-WmiObject -class Win32_OperatingSystem
-        $ThisPCDescription.Description = $PCDescription
-        $ThisPCDescription.put() | out-null
-        Write-Host "$(Get-LogDate)`t- Takes affect after reboot.." -ForegroundColor Green
+   Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/Rename-PC.ps1" | Invoke-Expression
+   Rename-PC
 
 # WinOptimizer
     
