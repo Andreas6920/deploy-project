@@ -43,7 +43,8 @@
     If($ThisIsWindows11){
 
         Start-Sleep -s 3
-        $FileUrl = "https://raw.githubusercontent.com/Andreas6920/WinOptimizer/main/res/start2.bin"
+
+        $FileUrl = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/start2.bin"
         $DestinationPath = "C:\Users\$env:USERNAME\AppData\Local\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState\start2.bin"
 
         # Download og gem filen
