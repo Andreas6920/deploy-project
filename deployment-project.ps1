@@ -118,6 +118,19 @@
         do{Start-Sleep -S 1;}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
         Write-Host "$(Get-LogDate)`t        - Verified." -ForegroundColor Yellow
 
+# Bitdefender
+    
+    # Download
+        Write-Host "$(Get-LogDate)`t    Installing Bitdefender Total Security.." -ForegroundColor Green
+        Write-Host "$(Get-LogDate)`t        - Downloading.." -ForegroundColor Yellow
+        $link = "https://flow.bitdefender.net/connect/2020/en_us/bitdefender_windows_6cc70ac0-d200-4ee4-a3c7-345f029c4d9d.exe"
+        $File = Join-path -Path ([Environment]::GetFolderPath("Desktop")) -Childpath "BitdefenderSecurity_Installer.exe"
+        (New-Object net.webclient).Downloadfile($link, $File)
+    
+    # Install
+        Write-Host "$(Get-LogDate)`t        - Installing.." -ForegroundColor Yellow
+        Start-Process -FilePath $File
+
 # Desktop shortcuts
     Write-Host "$(Get-LogDate)`t    Removing desktop icons:" -ForegroundColor Green
 
