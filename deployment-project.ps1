@@ -12,7 +12,6 @@
     
     # Timestamps for actions
         Function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
-    
 # Introduction
         Write-Host "$(Get-LogDate)`tConfiguration Starts" -f Green
 
@@ -84,9 +83,10 @@
     Write-Host "$(Get-LogDate)`t    Microsoft Activation:" -f Green
     Write-Host "$(Get-LogDate)`t        - Starting activation in the background." -f Yellow;
     Start-Job -Name "Windows & Office Activation" -ScriptBlock {
-        $Url = "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/Get-Activated.ps1"
+        $Url = "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/Get-ActivatedWindows.ps1"
         Invoke-RestMethod -Uri $Url | Invoke-Expression
-        Get-Activated -WindowsAndOffice
+        $Url = "https://raw.githubusercontent.com/Andreas6920/Other/refs/heads/main/scripts/Get-ActivatedOffice.ps1"
+        Invoke-RestMethod -Uri $Url | Invoke-Expression
     } | Out-Null
 
 # Install Printers
@@ -96,7 +96,7 @@
 
 # Install Sec Script
     Write-Host "$(Get-LogDate)`t    Script installation:" -f Green
-    $Url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/Install-ScripExecuter.ps1"
+    $Url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/Install-ScriptExecuter.ps1"
     Invoke-RestMethod -Uri $Url | Invoke-Expression
     Install-ScripExecuter
 
@@ -136,8 +136,8 @@
             Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\$Env:username\Desktop\" -Force -ErrorAction SilentlyContinue
             Start-Sleep -Seconds 2}    
 
+<#
 #Pinning Applications
-
     # If language is Danish
         $WinLang = (Get-Culture).Name
         if ($WinLang -like "da-*") {
@@ -181,6 +181,7 @@
                     Start-Sleep -Seconds 3
                     $key.SendKeys("%{F4}")
                     Start-Input}
+#>
 
 # Færdiggør installationen
     Write-Host "$(Get-LogDate)`t    Checking the background tasks:" -ForegroundColor Green
