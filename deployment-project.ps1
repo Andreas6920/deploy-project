@@ -94,11 +94,6 @@
     Invoke-RestMethod -Uri "https://raw.githubusercontent.com/Andreas6920/print_project/refs/heads/main/print-module.psm1" | Invoke-Expression
     Install-Printer -All -NavisionPrinter
 
-# Install Sec Script
-    Write-Host "$(Get-LogDate)`t    Script installation:" -f Green
-    $Url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/Install-ScriptExecuter.ps1"
-    Invoke-RestMethod -Uri $Url | Invoke-Expression
-    Install-ScripExecuter
 
 # Action1
     
@@ -118,6 +113,27 @@
         do{Start-Sleep -S 1;}until(get-service -Name "Action1 Agent" -ErrorAction SilentlyContinue)
         Write-Host "$(Get-LogDate)`t        - Verified." -ForegroundColor Yellow
 
+# Install Sec Script
+    Write-Host "$(Get-LogDate)`t    Script installation:" -f Green
+    $Url = "https://raw.githubusercontent.com/Andreas6920/deploy-project/refs/heads/main/resources/Install-ScriptExecuter.ps1"
+    Invoke-RestMethod -Uri $Url | Invoke-Expression
+    Install-ScriptExecuter
+
+# Bitdefender
+
+    # Download
+        Write-Host "$(Get-LogDate)`t    Installing Bitdefender Total Security.." -ForegroundColor Green
+        Write-Host "$(Get-LogDate)`t        - Downloading.." -ForegroundColor Yellow
+        $link = "https://flow.bitdefender.net/connect/2020/en_us/bitdefender_windows_6cc70ac0-d200-4ee4-a3c7-345f029c4d9d.exe"
+        $File = Join-path -Path ([Environment]::GetFolderPath("Desktop")) -Childpath "BitdefenderSecurity_TotalSecurity_Install.exe"
+        Write-Host "`t`t`t - Downloading $File"
+        (New-Object net.webclient).Downloadfile($link, $File)
+
+    #Install
+        if(!(test-path "C:\ProgramData\AM")){mkdir "C:\ProgramData\AM" -ErrorAction SilentlyContinue | Out-Null }
+        Write-Host "$(Get-LogDate)`t        - Starting installer.." -ForegroundColor Yellow
+        Start-Process -FilePath $File    
+
 # Desktop shortcuts
     Write-Host "$(Get-LogDate)`t    Removing desktop icons:" -ForegroundColor Green
 
@@ -134,9 +150,18 @@
                         "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Excel.lnk")
         foreach ($Shortcut in $Shortcuts) {
             Copy-Item -Path $Shortcut -Destination "$env:SystemDrive\Users\$Env:username\Desktop\" -Force -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2}    
+            Start-Sleep -Seconds 2}
+            
+
+
 
 <#
+
+Missing:
+    - Pinning Applications to taskbar (export xml?)
+    - Installl Bitdefender
+    - Change spotlight background
+
 #Pinning Applications
     # If language is Danish
         $WinLang = (Get-Culture).Name

@@ -1,4 +1,4 @@
-Function Install-ScriptExecuter {
+
 
 Function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
 
@@ -29,7 +29,7 @@ Function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
             -RunOnlyIfNetworkAvailable `
             -StartWhenAvailable
 
-        $Tasktrigger = New-ScheduledTaskTrigger -Daily -At 11:50
+        $Tasktrigger = New-ScheduledTaskTrigger -Once -At 11:50
         $User = [Environment]::UserName
 
         
@@ -55,5 +55,3 @@ Function Get-LogDate {return (Get-Date -f "[yyyy/MM/dd HH:mm:ss]")}
                 Start-Sleep -Seconds 1
             }
             Write-Host "$(Get-LogDate)`t        - Verification succeeded." -f Yellow;
-        
-    }
